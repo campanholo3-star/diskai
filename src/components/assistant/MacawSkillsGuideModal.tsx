@@ -5,17 +5,15 @@ import {
   Upload,
   Plus,
   Trash2,
-  ExternalLink,
   ChevronRight,
   X,
   CheckCircle2,
   Search,
   BookOpen,
   ArrowRight,
-  Terminal,
+  ArrowLeft,
   Layers,
-  Zap,
-  Info
+  Zap
 } from 'lucide-react';
 
 export interface CustomSkill {
@@ -161,7 +159,6 @@ export const MacawSkillsGuideModal: React.FC<MacawSkillsGuideModalProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Persistir alterações no localStorage
   const saveSkills = (newSkills: CustomSkill[]) => {
     setSkills(newSkills);
     try {
@@ -171,7 +168,6 @@ export const MacawSkillsGuideModal: React.FC<MacawSkillsGuideModalProps> = ({
     }
   };
 
-  // Upload e parsing de arquivo .skill.md
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -184,12 +180,10 @@ export const MacawSkillsGuideModal: React.FC<MacawSkillsGuideModalProps> = ({
         const content = event.target?.result as string;
         if (!content || !content.trim()) return;
 
-        // Extrair nome e descrição do markdown
         let name = file.name.replace(/\.skill\.md$/i, '').replace(/\.md$/i, '').replace(/[-_]/g, ' ');
         name = name.charAt(0).toUpperCase() + name.slice(1);
         let description = 'Habilidade personalizada carregada em formato Markdown (.skill.md)';
 
-        // Tentar extrair de frontmatter ou cabeçalhos
         const nameMatch = content.match(/name:\s*([^\n\r]+)/i) || content.match(/^#\s+([^\n\r]+)/m);
         if (nameMatch && nameMatch[1]) {
           name = nameMatch[1].replace(/skill/i, '').replace(/[\(\)]/g, '').trim();
@@ -202,7 +196,6 @@ export const MacawSkillsGuideModal: React.FC<MacawSkillsGuideModalProps> = ({
           description = descMatch[1].trim();
         }
 
-        // Extrair exemplos de prompts se houver
         const samplePrompts: string[] = [];
         const promptMatches = content.match(/[-*]\s*["']([^"']+)["']/g);
         if (promptMatches) {
@@ -255,9 +248,148 @@ export const MacawSkillsGuideModal: React.FC<MacawSkillsGuideModalProps> = ({
     return s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) || s.fileName.toLowerCase().includes(q);
   });
 
+  // TELA DETALHADA DA HABILIDADE (Renderizada diretamente no container com botão X claro e visível)
+  if (selectedSkill) {
+    return (
+      <div className="flex flex-col h-full overflow-hidden select-none bg-inherit animate-in fade-in">
+        {/* Header Superior com Botão Voltar, Título e Botão Fechar X */}
+        <div className={`p-3 border-b flex items-center justify-between gap-2 flex-shrink-0 ${
+          theme === 'light' ? 'bg-sky-50 border-black/15' : 'bg-[#141517] border-white/[0.08]'
+        }`}>
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => setSelectedSkill(null)}
+              className="px-2.5 py-1 rounded-xl bg-white/[0.08] hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5 text-[#38bdf8] transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Voltar</span>
+            </button>
+            <div className="truncate min-w-0">
+              <h4 className={`text-xs font-bold truncate ${theme === 'light' ? 'text-black' : 'text-white'}`}>
+                {selectedSkill.name}
+              </h4>
+              <span className="text-[10px] font-mono text-[#949ba4] truncate">{selectedSkill.fileName}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedSkill(null);
+                if (onClose) onClose();
+              }}
+              title="Fechar janela de habilidades"
+              className={`p-1.5 rounded-xl border transition-all ${
+                theme === 'light'
+                  ? 'hover:bg-black/10 text-slate-700 border-black/20'
+                  : 'hover:bg-rose-500/20 text-[#949ba4] hover:text-rose-400 border-white/[0.08]'
+              }`}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Conteúdo com Scroll da Habilidade */}
+        <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5 no-scrollbar">
+          {/* O Que Esta Habilidade Executa */}
+          <div className={`p-3 rounded-2xl border space-y-1.5 ${
+            theme === 'light'
+              ? 'bg-sky-50 border-sky-200 text-slate-800'
+              : 'bg-[#0284c7]/10 border-[#0284c7]/30 text-[#dbdee1]'
+          }`}>
+            <div className="flex items-center gap-2 text-xs font-bold text-[#0284c7] dark:text-[#38bdf8]">
+              <Zap className="w-3.5 h-3.5" />
+              <span>O que esta habilidade executa:</span>
+            </div>
+            <p className="text-xs leading-relaxed font-medium">
+              {selectedSkill.description}
+            </p>
+          </div>
+
+          {/* Documento Markdown (.skill.md) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs font-bold text-[#949ba4]">
+              <span className="flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5" />
+                Instruções Técnicas (.skill.md)
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-mono">Markdown</span>
+            </div>
+
+            <div className={`p-3 rounded-2xl border font-mono text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap max-h-56 no-scrollbar ${
+              theme === 'light'
+                ? 'bg-slate-50 border-black/15 text-slate-800'
+                : 'bg-[#111214] border-white/[0.08] text-[#dbdee1]'
+            }`}>
+              {selectedSkill.content}
+            </div>
+          </div>
+
+          {/* Exemplos de Prompts com Botão para Executar no Chat */}
+          {selectedSkill.samplePrompts && selectedSkill.samplePrompts.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <div className="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Executar no Chat com o Assistente:</span>
+              </div>
+              <div className="space-y-1.5">
+                {selectedSkill.samplePrompts.map((prompt, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      if (onSelectPrompt) onSelectPrompt(prompt);
+                      setSelectedSkill(null);
+                    }}
+                    className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-center justify-between group hover:scale-[1.01] ${
+                      theme === 'light'
+                        ? 'bg-slate-50 hover:bg-sky-50 border-black/15 hover:border-sky-500 text-black'
+                        : 'bg-white/[0.04] hover:bg-[#0284c7]/20 border-white/[0.06] hover:border-[#0284c7]/40 text-white'
+                    }`}
+                  >
+                    <span className="text-xs font-medium truncate pr-2">"{prompt}"</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#38bdf8] group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Rodapé com Ações */}
+        <div className={`p-2.5 border-t flex items-center justify-between gap-2 flex-shrink-0 ${
+          theme === 'light' ? 'bg-slate-100 border-black/15' : 'bg-[#141517] border-white/[0.06]'
+        }`}>
+          <button
+            type="button"
+            onClick={() => setSelectedSkill(null)}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-[#949ba4] hover:text-white"
+          >
+            Voltar à Lista
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const promptToRun = selectedSkill.samplePrompts?.[0] || `Executar instrução da habilidade ${selectedSkill.name}`;
+              if (onSelectPrompt) onSelectPrompt(promptToRun);
+              setSelectedSkill(null);
+            }}
+            className="px-3.5 py-1.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Executar no Chat</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // TELA PRINCIPAL: LISTA DE HABILIDADES
   return (
     <div className="flex flex-col h-full overflow-hidden select-none">
-      {/* Hidden file input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -266,7 +398,7 @@ export const MacawSkillsGuideModal: React.FC<MacawSkillsGuideModalProps> = ({
         className="hidden"
       />
 
-      {/* Header com Botão de Carregar .skill.md */}
+      {/* Header com Botão de Carregar .skill.md e Botão de Fechar X Claro e Funcional */}
       <div className={`p-3.5 border-b flex-shrink-0 flex flex-col gap-2.5 transition-colors ${
         theme === 'light'
           ? 'bg-gradient-to-r from-sky-50 via-indigo-50/50 to-white border-black/15'
@@ -287,15 +419,32 @@ export const MacawSkillsGuideModal: React.FC<MacawSkillsGuideModalProps> = ({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            title="Importar novo documento de instrução .skill.md"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#4f46e5] hover:from-[#0369a1] hover:to-[#4338ca] text-white text-[11px] font-bold shadow-md transition-all hover:scale-102 active:scale-98 flex-shrink-0"
-          >
-            <Upload className="w-3.5 h-3.5" />
-            <span>Carregar (.skill.md)</span>
-          </button>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              title="Importar novo documento de instrução .skill.md"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#4f46e5] hover:from-[#0369a1] hover:to-[#4338ca] text-white text-[11px] font-bold shadow-md transition-all hover:scale-102 active:scale-98 flex-shrink-0"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Carregar (.skill.md)</span>
+            </button>
+
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                title="Fechar aba de habilidades"
+                className={`p-1.5 rounded-xl border transition-all flex items-center justify-center ${
+                  theme === 'light'
+                    ? 'hover:bg-black/10 text-slate-700 border-black/20'
+                    : 'hover:bg-rose-500/20 text-[#949ba4] hover:text-rose-400 border-white/[0.08]'
+                }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Feedback de importação */}
@@ -410,159 +559,6 @@ export const MacawSkillsGuideModal: React.FC<MacawSkillsGuideModalProps> = ({
           ))
         )}
       </div>
-
-      {/* Modal / Janela Detalhando o Conteúdo e o que a Skill Executa */}
-      {selectedSkill && (
-        <div
-          onClick={() => setSelectedSkill(null)}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className={`w-full max-w-lg max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border ${
-              theme === 'light'
-                ? 'bg-white text-black border-2 border-black'
-                : 'bg-[#1a1b1e] border-white/[0.12] text-[#dbdee1]'
-            }`}
-          >
-            {/* Header do Modal de Detalhes */}
-            <div className={`p-4 border-b flex items-start justify-between gap-3 flex-shrink-0 ${
-              theme === 'light' ? 'bg-sky-50 border-black/15' : 'bg-[#141517] border-white/[0.08]'
-            }`}>
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-2xl bg-[#0284c7]/20 border border-[#0284c7]/40 flex items-center justify-center text-[#38bdf8] flex-shrink-0 shadow-md">
-                  <FileCode className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className={`text-sm font-extrabold truncate ${theme === 'light' ? 'text-black' : 'text-white'}`}>
-                    {selectedSkill.name}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/[0.06] text-[#38bdf8] border border-white/[0.08]">
-                      {selectedSkill.fileName}
-                    </span>
-                    <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Habilidade Pronta
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedSkill(null)}
-                className={`p-1.5 rounded-xl transition-colors ${
-                  theme === 'light' ? 'hover:bg-black/10 text-slate-700' : 'hover:bg-white/[0.08] text-[#949ba4] hover:text-white'
-                }`}
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Conteúdo com Scroll: O Que a Skill Executa + Documentação Markdown */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 no-scrollbar">
-              {/* O Que Esta Skill Executa */}
-              <div className={`p-3.5 rounded-2xl border space-y-2 ${
-                theme === 'light'
-                  ? 'bg-sky-50/70 border-sky-200 text-slate-800'
-                  : 'bg-[#0284c7]/10 border-[#0284c7]/30 text-[#dbdee1]'
-              }`}>
-                <div className="flex items-center gap-2 text-xs font-bold text-[#0284c7] dark:text-[#38bdf8]">
-                  <Zap className="w-4 h-4" />
-                  <span>O que esta habilidade executa:</span>
-                </div>
-                <p className="text-xs leading-relaxed font-medium">
-                  {selectedSkill.description}
-                </p>
-              </div>
-
-              {/* Documento Markdown Completo (.skill.md) */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-[#949ba4]">
-                  <span className="flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5" />
-                    Instruções Técnicas (.skill.md)
-                  </span>
-                  <span className="text-[10px] uppercase tracking-wider">Markdown format</span>
-                </div>
-
-                <div className={`p-3.5 rounded-2xl border font-mono text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap ${
-                  theme === 'light'
-                    ? 'bg-slate-50 border-black/15 text-slate-800'
-                    : 'bg-[#111214] border-white/[0.08] text-[#dbdee1]'
-                }`}>
-                  {selectedSkill.content}
-                </div>
-              </div>
-
-              {/* Exemplos de Prompts para Execução */}
-              {selectedSkill.samplePrompts && selectedSkill.samplePrompts.length > 0 && (
-                <div className="space-y-2 pt-1">
-                  <div className="text-xs font-bold text-sky-400 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Executar no Chat com o Assistente:</span>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    {selectedSkill.samplePrompts.map((prompt, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          if (onSelectPrompt) {
-                            onSelectPrompt(prompt);
-                          }
-                          setSelectedSkill(null);
-                        }}
-                        className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-center justify-between group hover:scale-[1.01] ${
-                          theme === 'light'
-                            ? 'bg-slate-50 hover:bg-sky-50 border-black/15 hover:border-sky-500 text-black'
-                            : 'bg-white/[0.04] hover:bg-[#0284c7]/20 border-white/[0.06] hover:border-[#0284c7]/40 text-white'
-                        }`}
-                      >
-                        <span className="text-xs font-medium truncate pr-2">"{prompt}"</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-[#38bdf8] group-hover:translate-x-1 transition-transform flex-shrink-0" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Rodapé com Ações */}
-            <div className={`p-3 border-t flex items-center justify-between gap-2 flex-shrink-0 ${
-              theme === 'light' ? 'bg-slate-100 border-black/15' : 'bg-[#141517] border-white/[0.06]'
-            }`}>
-              <div className="text-[11px] text-[#949ba4] truncate">
-                Disponível na plataforma DiskAI
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedSkill(null)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-semibold text-[#949ba4] hover:text-white"
-                >
-                  Fechar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const promptToRun = selectedSkill.samplePrompts?.[0] || `Executar instrução da habilidade ${selectedSkill.name}`;
-                    if (onSelectPrompt) {
-                      onSelectPrompt(promptToRun);
-                    }
-                    setSelectedSkill(null);
-                  }}
-                  className="px-4 py-1.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Executar no Chat</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

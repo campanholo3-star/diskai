@@ -7,6 +7,7 @@ import {
   Message,
   MessageAttachment,
   MeetingSummary,
+  ActionItem,
   User,
   UserStatus,
   Friend,
@@ -209,6 +210,8 @@ interface DiskaiContextType {
   openSummaryModal: (summary: MeetingSummary) => void;
   closeSummaryModal: () => void;
   toggleActionItem: (summaryId: string, actionId: string) => void;
+  updateMeetingSummary: (summaryId: string, updates: Partial<MeetingSummary>) => void;
+  addMeetingSummaryTask: (summaryId: string, task: { task: string; assignee: string; priority?: 'alta' | 'média' | 'baixa' }) => void;
   generateChatSummary: (channelId?: string, channelName?: string) => Promise<void>;
   isGeneratingChatSummary: boolean;
 
@@ -1786,6 +1789,12 @@ export const DiskaiProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
     }
 
+    if (summary) {
+      summary.creatorId = currentUser.id;
+      summary.creatorName = currentUser.name || 'Você';
+      summary.titlePending = true;
+    }
+
     setSummaries(prev => [summary!, ...prev]);
     setIsGeneratingSummary(false);
     setActiveSummaryModal(summary);
@@ -1941,6 +1950,46 @@ export const DiskaiProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return {
           ...prev,
           actionItems: prev.actionItems.map(act => (act.id === actionId ? { ...act, completed: !act.completed } : act))
+        };
+      });
+    }
+  };
+
+  const updateMeetingSummary = (summaryId: string, updates: Partial<MeetingSummary>) => {
+    setSummaries(prev =>
+      prev.map(sum => (sum.id === summaryId ? { ...sum, ...updates } : sum))
+    );
+    if (activeSummaryModal && activeSummaryModal.id === summaryId) {
+      setActiveSummaryModal(prev => (prev ? { ...prev, ...updates } : null));
+    }
+  };
+
+  const addMeetingSummaryTask = (
+    summaryId: string,
+    task: { task: string; assignee: string; priority?: 'alta' | 'média' | 'baixa' }
+  ) => {
+    const newItem: ActionItem = {
+      id: `act-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      task: task.task,
+      assignee: task.assignee || 'Equipe',
+      completed: false,
+      priority: task.priority || 'média'
+    };
+    setSummaries(prev =>
+      prev.map(sum => {
+        if (sum.id !== summaryId) return sum;
+        return {
+          ...sum,
+          actionItems: [...sum.actionItems, newItem]
+        };
+      })
+    );
+    if (activeSummaryModal && activeSummaryModal.id === summaryId) {
+      setActiveSummaryModal(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          actionItems: [...prev.actionItems, newItem]
         };
       });
     }
@@ -2885,6 +2934,8 @@ export const DiskaiProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         openSummaryModal,
         closeSummaryModal,
         toggleActionItem,
+        updateMeetingSummary,
+        addMeetingSummaryTask,
         generateChatSummary,
         isGeneratingChatSummary,
         currentUser,

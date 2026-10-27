@@ -11,9 +11,12 @@ import {
   Radio,
   FileText,
   Volume2,
-  Share2,
   Music,
-  Maximize2
+  Users,
+  CheckCircle2,
+  Wifi,
+  RadioTower,
+  Clock
 } from 'lucide-react';
 import { useDiskai } from '../../context/DiskaiContext';
 import { soundFx } from '../../utils/soundEffects';
@@ -32,17 +35,18 @@ export const VoiceCallView: React.FC = () => {
     startRecording,
     stopRecording,
     endCallAndSummarize,
-    leaveVoiceChannel,
     localStream,
     screenStream,
     liveTranscript,
     isGeneratingSummary,
-    currentUser
+    currentUser,
+    participants
   } = useDiskai();
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const screenVideoRef = useRef<HTMLVideoElement>(null);
   const [showLiveTranscript, setShowLiveTranscript] = useState(true);
+  const [sideDrawerTab, setSideDrawerTab] = useState<'all' | 'participants' | 'transcript'>('all');
 
   // Audio wave visualizer simulation
   const [audioLevel, setAudioLevel] = useState(0);
@@ -51,7 +55,6 @@ export const VoiceCallView: React.FC = () => {
     let animId: number;
     const updateWave = () => {
       if (!isMuted) {
-        // Dynamic pulse when mic is open
         const level = Math.random() * 0.7 + 0.3;
         setAudioLevel(level);
       } else {
@@ -83,6 +86,51 @@ export const VoiceCallView: React.FC = () => {
     const s = sec % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
+
+  // Lista de participantes conectados em tempo real na chamada
+  const connectedParticipants = [
+    {
+      id: currentUser.id,
+      name: `${currentUser.name} (Você)`,
+      avatar: currentUser.avatar,
+      role: 'Host da Reunião',
+      isSpeaking: !isMuted && audioLevel > 0.4,
+      isMuted: isMuted,
+      isVideo: isVideoOn,
+      status: 'Conectado'
+    },
+    {
+      id: 'user-ana',
+      name: 'Ana Silva',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+      role: 'Product Manager',
+      isSpeaking: Math.sin(Date.now() / 2400) > 0.4,
+      isMuted: false,
+      isVideo: true,
+      status: 'Falando'
+    },
+    {
+      id: 'user-carlos',
+      name: 'Carlos Mendes',
+      avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80',
+      role: 'Tech Lead',
+      isSpeaking: false,
+      isMuted: false,
+      isVideo: false,
+      status: 'Conectado'
+    },
+    {
+      id: 'user-diskai-bot',
+      name: 'Diskai AI Bot',
+      avatar: '',
+      isBot: true,
+      role: 'IA Gravando & Atenta',
+      isSpeaking: isRecording,
+      isMuted: false,
+      isVideo: false,
+      status: 'Transcrevendo'
+    }
+  ];
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#1e1f22] relative overflow-hidden select-none">
@@ -117,7 +165,7 @@ export const VoiceCallView: React.FC = () => {
             </button>
           )}
 
-          {/* Toggle Live AI Transcript Drawer */}
+          {/* Toggle Live AI Transcript & Participants Drawer */}
           <button
             onClick={() => setShowLiveTranscript(!showLiveTranscript)}
             className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
@@ -127,7 +175,7 @@ export const VoiceCallView: React.FC = () => {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Transcrição ao Vivo
+            <span>Painel da Reunião ({connectedParticipants.length})</span>
           </button>
         </div>
       </div>
@@ -227,11 +275,11 @@ export const VoiceCallView: React.FC = () => {
           <div className="relative rounded-2xl bg-gradient-to-br from-[#2b2d31] to-[#5865F2]/20 overflow-hidden flex flex-col items-center justify-center border-2 border-[#5865F2]/40 shadow-lg">
             <div className="flex flex-col items-center gap-3">
               <div className="w-24 h-24 rounded-full bg-[#5865F2]/30 flex items-center justify-center border-2 border-[#5865F2] shadow-2xl">
-                <Bot className="w-12 h-12 text-[#5865F2] animate-bounce-subtle" />
+                <Bot className="w-12 h-12 text-[#5865F2]" />
               </div>
               <div className="text-white font-bold text-base flex items-center gap-1.5">
                 Diskai AI Bot
-                <Sparkles className="w-4 h-4 text-[#5865F2] animate-spin-slow" />
+                <Sparkles className="w-4 h-4 text-[#5865F2]" />
               </div>
             </div>
             <div className="absolute bottom-3 left-3 bg-[#5865F2]/90 backdrop-blur-md px-2.5 py-1 rounded-md text-xs font-semibold text-white flex items-center gap-1.5">
@@ -240,43 +288,162 @@ export const VoiceCallView: React.FC = () => {
           </div>
         </div>
 
-        {/* Live Transcript & Real-Time AI Feed Drawer */}
+        {/* Live Drawer: Participantes em Tempo Real + Transcrição ao Vivo */}
         {showLiveTranscript && (
-          <div className="w-80 bg-[#2b2d31] rounded-2xl border border-[#35373c] p-4 flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-[#35373c]">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#5865F2]" />
-                <span className="font-bold text-white text-sm">Transcrição em Tempo Real</span>
+          <div className="w-88 sm:w-96 bg-[#2b2d31] rounded-2xl border border-[#35373c] p-4 flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
+            {/* Header com Abas Segmentadas */}
+            <div className="flex items-center justify-between pb-3 border-b border-[#35373c] flex-shrink-0">
+              <div className="flex items-center gap-1 bg-[#1e1f22] p-1 rounded-xl border border-white/5 text-[11px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => setSideDrawerTab('all')}
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
+                    sideDrawerTab === 'all'
+                      ? 'bg-[#5865F2] text-white shadow'
+                      : 'text-[#949ba4] hover:text-white'
+                  }`}
+                >
+                  Geral
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSideDrawerTab('participants')}
+                  className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+                    sideDrawerTab === 'participants'
+                      ? 'bg-[#5865F2] text-white shadow'
+                      : 'text-[#949ba4] hover:text-white'
+                  }`}
+                >
+                  <Users className="w-3 h-3" />
+                  <span>({connectedParticipants.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSideDrawerTab('transcript')}
+                  className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+                    sideDrawerTab === 'transcript'
+                      ? 'bg-[#5865F2] text-white shadow'
+                      : 'text-[#949ba4] hover:text-white'
+                  }`}
+                >
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  <span>Transcrição</span>
+                </button>
               </div>
-              <span className="text-[10px] bg-[#23a55a]/20 text-[#23a55a] font-bold px-2 py-0.5 rounded uppercase">
-                Ativo
+
+              <span className="text-[10px] bg-[#23a55a]/20 text-[#23a55a] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#23a55a] animate-pulse" />
+                Ao Vivo
               </span>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-3 space-y-3 no-scrollbar text-xs">
-              {liveTranscript.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center text-[#949ba4] px-4 space-y-2">
-                  <Bot className="w-8 h-8 text-[#5865F2] opacity-70" />
-                  <p>Inicie a gravação para ver a transcrição em tempo real aqui.</p>
-                </div>
-              ) : (
-                liveTranscript.map((t, idx) => (
-                  <div key={idx} className="bg-[#313338] p-2.5 rounded-lg border border-[#383a40] space-y-1">
-                    <div className="flex items-center justify-between text-[#949ba4] font-semibold text-[11px]">
-                      <span className="text-white">{t.speaker}</span>
-                      <span>{t.time}</span>
-                    </div>
-                    <p className="text-[#dbdee1] leading-relaxed">{t.text}</p>
+            {/* PAINEL 1: Lista de Participantes em Tempo Real (Conforme Requisito 3) */}
+            {(sideDrawerTab === 'all' || sideDrawerTab === 'participants') && (
+              <div className="py-2.5 border-b border-[#35373c] space-y-2 flex-shrink-0">
+                <div className="flex items-center justify-between text-xs font-bold text-white">
+                  <div className="flex items-center gap-1.5 text-[#38bdf8]">
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Participantes Presentes ({connectedParticipants.length})</span>
                   </div>
-                ))
-              )}
-            </div>
+                  <span className="text-[10px] text-[#23a55a] font-semibold flex items-center gap-1">
+                    <Wifi className="w-3 h-3" /> Conectados
+                  </span>
+                </div>
 
-            <div className="pt-3 border-t border-[#35373c] text-center">
-              <span className="text-[11px] text-[#949ba4]">
-                Ao encerrar a call, a IA sintetizará todas as falas em um resumo executivo com tarefas.
-              </span>
-            </div>
+                <div className="space-y-1.5 max-h-40 overflow-y-auto no-scrollbar pr-0.5">
+                  {connectedParticipants.map(p => (
+                    <div
+                      key={p.id}
+                      className="p-2 rounded-xl bg-[#1e1f22]/70 border border-white/[0.04] flex items-center justify-between gap-2 text-xs"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        {p.isBot ? (
+                          <div className="w-7 h-7 rounded-full bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center text-[#5865F2] flex-shrink-0">
+                            <Bot className="w-4 h-4" />
+                          </div>
+                        ) : p.avatar ? (
+                          <img
+                            src={p.avatar}
+                            alt={p.name}
+                            className="w-7 h-7 rounded-full object-cover border border-white/10 flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
+                            {p.name.charAt(0)}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <div className="font-bold text-white text-[11px] truncate flex items-center gap-1">
+                            {p.name}
+                            {p.isSpeaking && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#23a55a] animate-ping" />
+                            )}
+                          </div>
+                          <div className="text-[10px] text-[#949ba4] truncate">{p.role}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {p.isMuted ? (
+                          <span title="Microfone Desligado" className="p-1 rounded-md bg-rose-500/10 text-rose-400">
+                            <MicOff className="w-3 h-3" />
+                          </span>
+                        ) : (
+                          <span title="Microfone Ativo" className="p-1 rounded-md bg-[#23a55a]/15 text-[#23a55a]">
+                            <Mic className="w-3 h-3" />
+                          </span>
+                        )}
+                        {p.isVideo && (
+                          <span title="Câmera Ligada" className="p-1 rounded-md bg-emerald-500/10 text-emerald-400">
+                            <Video className="w-3 h-3" />
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* PAINEL 2: Transcrição da Chamada em Tempo Real */}
+            {(sideDrawerTab === 'all' || sideDrawerTab === 'transcript') && (
+              <div className="flex-1 flex flex-col min-h-0 pt-2.5 space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-white flex-shrink-0">
+                  <div className="flex items-center gap-1.5 text-amber-400">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Transcrição da Chamada</span>
+                  </div>
+                  <span className="text-[10px] text-[#949ba4]">
+                    {liveTranscript.length} falas
+                  </span>
+                </div>
+
+                <div className="flex-1 overflow-y-auto space-y-2.5 no-scrollbar text-xs pr-0.5">
+                  {liveTranscript.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center text-[#949ba4] px-4 space-y-2 py-8">
+                      <Bot className="w-8 h-8 text-[#5865F2] opacity-70" />
+                      <p className="text-xs">Inicie a gravação para ver a transcrição em tempo real aqui.</p>
+                    </div>
+                  ) : (
+                    liveTranscript.map((t, idx) => (
+                      <div key={idx} className="bg-[#1e1f22]/70 p-2.5 rounded-xl border border-[#383a40] space-y-1">
+                        <div className="flex items-center justify-between text-[#949ba4] font-semibold text-[11px]">
+                          <span className="text-white font-bold">{t.speaker}</span>
+                          <span className="font-mono text-[10px]">{t.time}</span>
+                        </div>
+                        <p className="text-[#dbdee1] leading-relaxed text-xs">{t.text}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-[#35373c] text-center flex-shrink-0">
+                  <span className="text-[10px] text-[#949ba4]">
+                    Ao encerrar a call, a IA sintetizará todas as falas em um resumo executivo com tarefas.
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -345,7 +512,7 @@ export const VoiceCallView: React.FC = () => {
           <Music className="w-5 h-5" />
         </button>
 
-        {/* KEY HIGHLIGHT: End Call & Generate AI Summary */}
+        {/* End Call & Generate AI Summary */}
         <button
           onClick={endCallAndSummarize}
           disabled={isGeneratingSummary}

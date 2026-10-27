@@ -66,6 +66,10 @@ export interface MeetingSummary {
   sentiment: 'Altamente Positivo' | 'Produtivo & Focado' | 'Descontraído' | 'Crítico';
   transcript: { speaker: string; time: string; text: string }[];
   postedToChannel?: boolean;
+  creatorId?: string;
+  creatorName?: string;
+  titlePending?: boolean;
+  meetingNotes?: string;
 }
 
 export interface MessageEmbed {

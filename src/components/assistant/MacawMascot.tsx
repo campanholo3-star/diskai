@@ -62,8 +62,23 @@ export const MacawMascot: React.FC = () => {
     participants,
     approveParticipant,
     revokeParticipant,
-    theme
+    theme,
+    isInCall,
+    activeVoiceChannel,
+    activeSummaryModal
   } = useDiskai();
+
+  // Visibilidade Condicional: O mascote NUNCA deve aparecer nas abas de reunião ou na interface do Studio de Reuniões
+  const isMeetingOrStudioActive =
+    isInCall ||
+    activeVoiceChannel !== null ||
+    activeSummaryModal !== null ||
+    activeChannel?.type === 'voice' ||
+    (activeChannel as any)?.isMeetingHub;
+
+  if (isMeetingOrStudioActive) {
+    return null;
+  }
 
   const isAdmin =
     currentUser.role === 'admin' ||
@@ -862,6 +877,7 @@ export const MacawMascot: React.FC = () => {
                 <MacawSkillsGuideModal
                   isEmbedded={true}
                   theme={theme}
+                  onClose={() => setMacawModalOpen(false)}
                   onSelectPrompt={(prompt) => {
                     handleTabChange('chat');
                     handleSendMessage(prompt);

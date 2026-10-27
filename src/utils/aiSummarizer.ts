@@ -189,3 +189,12 @@ ${summary.transcript.map(t => `**[${t.time}] ${t.speaker}:** ${t.text}`).join('\
 *Gerado com Diskai AI Intelligence*
 `;
 }
+
+// Converte a transcrição em formato Markdown ultra-comprimido e otimizado
+export function compressTranscriptToMarkdown(summary: MeetingSummary): string {
+  const header = `# Transcrição Otimizada: ${summary.title.trim()} (${summary.date} • ${summary.durationFormatted})`;
+  const lines = (summary.transcript || [])
+    .map(t => `> **[${t.time}] ${t.speaker}:** ${t.text.trim().replace(/\s+/g, ' ')}`)
+    .join('\n');
+  return `${header}\n\n${lines}\n\n*Ata comprimida e otimizada pelo DiskAI Studio.*`;
+}
