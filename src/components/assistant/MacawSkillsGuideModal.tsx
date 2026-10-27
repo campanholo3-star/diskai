@@ -1,22 +1,133 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
-  Calendar,
-  Pin,
-  FileText,
-  Shield,
-  Search,
-  CheckCircle2,
-  Clock,
-  ArrowRight,
+  FileCode,
+  Upload,
+  Plus,
+  Trash2,
   ExternalLink,
-  Bot,
+  ChevronRight,
+  X,
+  CheckCircle2,
+  Search,
+  BookOpen,
+  ArrowRight,
+  Terminal,
+  Layers,
   Zap,
-  Lock,
-  Users,
-  MessageSquare,
-  X
+  Info
 } from 'lucide-react';
+
+export interface CustomSkill {
+  id: string;
+  name: string;
+  description: string;
+  content: string;
+  fileName: string;
+  category?: string;
+  createdAt?: string;
+  samplePrompts?: string[];
+  isCustom?: boolean;
+}
+
+const DEFAULT_INITIAL_SKILLS: CustomSkill[] = [
+  {
+    id: 'skill-task-manager',
+    name: 'Gerenciador de Tarefas e Agenda',
+    description: 'Criação, acompanhamento de prazos, delegação de membros e agendamento sincronizado no servidor.',
+    fileName: 'task-manager.skill.md',
+    category: 'Produtividade',
+    createdAt: 'Nativo',
+    samplePrompts: [
+      'Criar tarefa: Revisar relatórios da semana com a equipe',
+      'Agendar reunião de alinhamento com Carlos e Sofia amanhã às 14h',
+      'Listar todas as tarefas pendentes na minha agenda'
+    ],
+    content: `# Task Manager Skill (.skill.md)
+
+## Descrição
+Gerenciador autônomo de tarefas, to-dos e agendamentos de reuniões no DiskAI.
+
+## O Que Esta Skill Executa:
+1. **Criação de Tarefas e Reuniões:** Interpreta datas, horários e títulos em linguagem natural.
+2. **Delegação e Notificações:** Permite atribuir tarefas a membros específicos e publicar avisos automáticos no canal de referência.
+3. **Sincronização em Tempo Real:** Registra compromissos na tabela \`appointments\` e atualiza status para concluído/pendente.
+
+## Regras de Execução:
+- Se o usuário mencionar horários relativos ("amanhã às 15h"), calcular a data ISO correta.
+- Ao concluir uma tarefa, emitir o feedback \`ARARA_SUCCESS\` e persistir a alteração.
+`
+  },
+  {
+    id: 'skill-meeting-synthesizer',
+    name: 'Síntese e Atas Executivas (Gemini Flash)',
+    description: 'Processa áudios e vídeos de reuniões, sintetiza canais e extrai decisões-chave e pontos de ação.',
+    fileName: 'meeting-synthesizer.skill.md',
+    category: 'Inteligência Artificial',
+    createdAt: 'Nativo',
+    samplePrompts: [
+      'Gerar ata executiva da última reunião gravada',
+      'Quais foram os principais pontos decididos sobre o lançamento?',
+      'Extrair os planos de ação atribuídos à equipe'
+    ],
+    content: `# Meeting Synthesizer Skill (.skill.md)
+
+## Descrição
+Motor de síntese executiva alimentado pelo Gemini 1.5 Flash para atas de chamadas e condensação de canais.
+
+## O Que Esta Skill Executa:
+1. **Estruturação de Atas:** Divide a gravação em Tópicos Discutidos, Decisões Tomadas e Sentimento Geral da equipe.
+2. **Action Items:** Identifica promessas de tarefas feitas durante a reunião e mapeia os responsáveis.
+3. **Exportação & Compartilhamento:** Permite copiar em Markdown ou enviar diretamente para o canal.
+`
+  },
+  {
+    id: 'skill-security-gatekeeper',
+    name: 'Auditor de Segurança e Permissões Granulares',
+    description: 'Controle de acesso individual por canal, aprovação de participantes e isolamento de canais privados.',
+    fileName: 'security-gatekeeper.skill.md',
+    category: 'Segurança & RLS',
+    createdAt: 'Nativo',
+    samplePrompts: [
+      'Quantos usuários estão aguardando aprovação de acesso?',
+      'Quais membros possuem permissão no canal privado da diretoria?',
+      'Verificar integridade e isolamento de permissões do servidor'
+    ],
+    content: `# Security Gatekeeper Skill (.skill.md)
+
+## Descrição
+Protocolo de gatekeeping e proteção de canais privados e perfis de usuários no DiskAI.
+
+## O Que Esta Skill Executa:
+1. **Controle de Acessos Individuais:** Gerencia cada solicitação de participante por canal alvo.
+2. **Isolamento de Canais Privados:** Garante que apenas o criador e administradores visualizem mensagens restritas.
+3. **Auditoria de Sessão:** Bloqueia participantes pendentes em modo de espera até autorização expressa.
+`
+  },
+  {
+    id: 'skill-channel-context-search',
+    name: 'Pesquisa de Contexto e Documentos',
+    description: 'Busca semântica em histórico de conversas, imagens e documentos anexados no DiskAI.',
+    fileName: 'channel-context-search.skill.md',
+    category: 'Pesquisa',
+    createdAt: 'Nativo',
+    samplePrompts: [
+      'O que foi discutido sobre a arquitetura do projeto no canal?',
+      'Analisar a planilha e documentos anexados recentemente',
+      'Quais links importantes foram compartilhados neste canal?'
+    ],
+    content: `# Channel Context Search Skill (.skill.md)
+
+## Descrição
+Capacidade de leitura de mensagens, imagens e documentos compartilhados para responder dúvidas de contexto.
+
+## O Que Esta Skill Executa:
+1. **Varredura de Conversas:** Analisa as últimas mensagens e decisões sem sair da tela.
+2. **Inspeção de Anexos:** Processa documentos (.txt, .md, .csv) e imagens com visão computacional.
+3. **Respostas Precisas:** Cruza perguntas com o histórico real armazenado no canal.
+`
+  }
+];
 
 interface MacawSkillsGuideModalProps {
   onClose?: () => void;
@@ -31,322 +142,427 @@ export const MacawSkillsGuideModal: React.FC<MacawSkillsGuideModalProps> = ({
   theme = 'dark',
   isEmbedded = false
 }) => {
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [skills, setSkills] = useState<CustomSkill[]>(() => {
+    try {
+      const saved = localStorage.getItem('diskai_custom_skills');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+    return DEFAULT_INITIAL_SKILLS;
+  });
 
-  const skills = [
-    {
-      id: 'calendar',
-      category: 'calendar',
-      icon: Calendar,
-      color: 'from-blue-500 to-cyan-500',
-      badgeColor: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-      title: 'Calendário e Agendamentos',
-      summary: 'Criação, listagem e gestão autônoma de reuniões e tarefas.',
-      details: [
-        'Cria compromissos automaticamente a partir de linguagem natural com data e horário.',
-        'Sincroniza eventos na tabela appointments do Supabase em tempo real.',
-        'Permite marcar tarefas como concluídas ou excluí-las com um único toque.'
-      ],
-      samplePrompts: [
-        'Agendar reunião de alinhamento com a equipe amanhã às 14h',
-        'Criar tarefa testar a gravação de chamadas',
-        'Quais são os meus próximos compromissos?'
-      ]
-    },
-    {
-      id: 'pinned',
-      category: 'pinned',
-      icon: Pin,
-      color: 'from-amber-500 to-orange-500',
-      badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-      title: 'Mensagens Fixadas',
-      summary: 'Centralização e busca de avisos prioritários do servidor.',
-      details: [
-        'Lista imediatamente todos os comunicados destacados no canal ativo.',
-        'Permite fixar e desfixar mensagens importantes com feedback visual da arara.',
-        'Filtra decisões e marcos históricos para que ninguém perca alinhamentos.'
-      ],
-      samplePrompts: [
-        'Mostrar mensagens fixadas deste canal',
-        'Quais foram os últimos avisos importantes postados?'
-      ]
-    },
-    {
-      id: 'summaries',
-      category: 'summaries',
-      icon: FileText,
-      color: 'from-purple-500 to-indigo-500',
-      badgeColor: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-      title: 'Resumos Inteligentes (Gemini Flash)',
-      summary: 'Atas executivas de reuniões em áudio e sínteses de canais de chat.',
-      details: [
-        'Processa áudios e vídeos de chamadas via Edge Function summarize-call gerando tópicos, decisões e sentimento.',
-        'Condensa centenas de mensagens não lidas de chat com summarize-chat em segundos.',
-        'Formata pontos de ação (action items) atribuídos aos membros presentes.'
-      ],
-      samplePrompts: [
-        'Resumir as conversas recentes deste canal',
-        'Gerar ata completa da reunião gravada'
-      ]
-    },
-    {
-      id: 'security',
-      category: 'security',
-      icon: Shield,
-      color: 'from-emerald-500 to-teal-500',
-      badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-      title: 'Gestão e Segurança da Plataforma',
-      summary: 'Controle de canais privados e aprovação de novos membros.',
-      details: [
-        'Protege canais privados garantindo acesso e inclusão apenas ao Criador do Canal ou Administradores.',
-        'Garante acesso livre de todos os membros aos canais públicos do servidor.',
-        'Alerta administradores instantaneamente sobre novas solicitações de usuários pendentes no Supabase.'
-      ],
-      samplePrompts: [
-        'Quantos usuários estão aguardando aprovação?',
-        'Quem tem permissão para acessar este canal privado?'
-      ]
-    },
-    {
-      id: 'search',
-      category: 'search',
-      icon: Search,
-      color: 'from-rose-500 to-pink-500',
-      badgeColor: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
-      title: 'Pesquisa de Projetos e Decisões',
-      summary: 'Varredura de histórico para respostas rápidas de contexto.',
-      details: [
-        'Analisa o contexto do canal ativo, anexos compartilhados e membros participantes.',
-        'Responde dúvidas contextuais sobre projetos em andamento sem sair do fluxo de trabalho.',
-        'Comportamento nativo com 15 gestos 3D realistas integrados ao Three.js.'
-      ],
-      samplePrompts: [
-        'O que a equipe discutiu sobre as permissões de canais?',
-        'Quais links úteis estão registrados no canal?'
-      ]
+  const [selectedSkill, setSelectedSkill] = useState<CustomSkill | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [importStatus, setImportStatus] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Persistir alterações no localStorage
+  const saveSkills = (newSkills: CustomSkill[]) => {
+    setSkills(newSkills);
+    try {
+      localStorage.setItem('diskai_custom_skills', JSON.stringify(newSkills));
+    } catch (e) {
+      console.error('[Skills] Erro ao salvar habilidades no localStorage:', e);
     }
-  ];
+  };
 
-  const filteredSkills = activeCategory === 'all'
-    ? skills
-    : skills.filter(s => s.category === activeCategory);
+  // Upload e parsing de arquivo .skill.md
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-  const content = (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Top Welcome Hero Banner */}
-      <div className={`p-4 sm:p-5 flex-shrink-0 border-b ${
+    const file = files[0];
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        if (!content || !content.trim()) return;
+
+        // Extrair nome e descrição do markdown
+        let name = file.name.replace(/\.skill\.md$/i, '').replace(/\.md$/i, '').replace(/[-_]/g, ' ');
+        name = name.charAt(0).toUpperCase() + name.slice(1);
+        let description = 'Habilidade personalizada carregada em formato Markdown (.skill.md)';
+
+        // Tentar extrair de frontmatter ou cabeçalhos
+        const nameMatch = content.match(/name:\s*([^\n\r]+)/i) || content.match(/^#\s+([^\n\r]+)/m);
+        if (nameMatch && nameMatch[1]) {
+          name = nameMatch[1].replace(/skill/i, '').replace(/[\(\)]/g, '').trim();
+        }
+
+        const descMatch = content.match(/description:\s*([^\n\r]+)/i) ||
+          content.match(/##\s*Descrição\s*\n+([^\n\r#]+)/i) ||
+          content.match(/##\s*Resumo\s*\n+([^\n\r#]+)/i);
+        if (descMatch && descMatch[1]) {
+          description = descMatch[1].trim();
+        }
+
+        // Extrair exemplos de prompts se houver
+        const samplePrompts: string[] = [];
+        const promptMatches = content.match(/[-*]\s*["']([^"']+)["']/g);
+        if (promptMatches) {
+          promptMatches.slice(0, 3).forEach(p => {
+            const clean = p.replace(/^[-*]\s*["']/, '').replace(/["']$/, '');
+            if (clean) samplePrompts.push(clean);
+          });
+        }
+        if (samplePrompts.length === 0) {
+          samplePrompts.push(`Executar instrução de ${name}`);
+        }
+
+        const newSkill: CustomSkill = {
+          id: `custom-skill-${Date.now()}`,
+          name,
+          description,
+          content,
+          fileName: file.name,
+          category: 'Personalizada',
+          createdAt: new Date().toLocaleDateString('pt-BR'),
+          samplePrompts,
+          isCustom: true
+        };
+
+        const updated = [newSkill, ...skills];
+        saveSkills(updated);
+
+        setImportStatus(`Habilidade "${name}" importada com sucesso!`);
+        setTimeout(() => setImportStatus(null), 4000);
+      } catch (err) {
+        console.error('[Skills] Falha ao processar arquivo .skill.md:', err);
+      }
+    };
+
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleDeleteSkill = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = skills.filter(s => s.id !== id);
+    saveSkills(updated);
+    if (selectedSkill?.id === id) {
+      setSelectedSkill(null);
+    }
+  };
+
+  const filteredSkills = skills.filter(s => {
+    const q = searchQuery.toLowerCase();
+    return s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) || s.fileName.toLowerCase().includes(q);
+  });
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden select-none">
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileUpload}
+        accept=".skill.md,.md,.txt"
+        className="hidden"
+      />
+
+      {/* Header com Botão de Carregar .skill.md */}
+      <div className={`p-3.5 border-b flex-shrink-0 flex flex-col gap-2.5 transition-colors ${
         theme === 'light'
-          ? 'bg-gradient-to-r from-sky-50 via-indigo-50 to-amber-50/50 border-black/15'
-          : 'bg-gradient-to-r from-[#0284c7]/20 via-[#4f46e5]/15 to-[#0ea5e9]/10 border-white/[0.08]'
+          ? 'bg-gradient-to-r from-sky-50 via-indigo-50/50 to-white border-black/15'
+          : 'bg-gradient-to-r from-[#0284c7]/20 via-[#1e1f22] to-[#141517] border-white/[0.08]'
       }`}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#0284c7]/20 border border-[#0284c7]/40 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#0284c7]/20 overflow-hidden">
-              <img src="/arara-mascote.png" alt="Arara Assistente" className="w-9 h-9 object-contain" />
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#0284c7]/20 border border-[#0284c7]/40 flex items-center justify-center text-[#38bdf8]">
+              <Layers className="w-4 h-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className={`text-base sm:text-lg font-black tracking-tight ${theme === 'light' ? 'text-black' : 'text-white'}`}>
-                  Guia de Habilidades da Arara
-                </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                  Gemini Flash
-                </span>
-              </div>
-              <p className={`text-xs mt-0.5 leading-snug ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>
-                Conheça tudo o que a mascote 3D oficial do DiskAI pode fazer por você e sua equipe! 🦜✨
+              <h4 className={`text-xs font-black tracking-tight ${theme === 'light' ? 'text-black' : 'text-white'}`}>
+                Habilidades Cadastradas ({skills.length})
+              </h4>
+              <p className={`text-[10px] ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>
+                Instruções ativas que expandem o assistente
               </p>
             </div>
           </div>
 
-          {!isEmbedded && onClose && (
-            <button
-              onClick={onClose}
-              className={`p-1.5 rounded-xl transition-all ${
-                theme === 'light'
-                  ? 'hover:bg-black/10 text-slate-700'
-                  : 'hover:bg-white/[0.08] text-[#949ba4] hover:text-white'
-              }`}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            title="Importar novo documento de instrução .skill.md"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#4f46e5] hover:from-[#0369a1] hover:to-[#4338ca] text-white text-[11px] font-bold shadow-md transition-all hover:scale-102 active:scale-98 flex-shrink-0"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span>Carregar (.skill.md)</span>
+          </button>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 mt-3.5 overflow-x-auto no-scrollbar pt-1">
-          <button
-            onClick={() => setActiveCategory('all')}
-            className={`px-3 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all ${
-              activeCategory === 'all'
-                ? 'bg-[#0284c7] text-white shadow-sm'
-                : theme === 'light'
-                ? 'bg-black/5 hover:bg-black/10 text-slate-700'
-                : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#949ba4] hover:text-white'
+        {/* Feedback de importação */}
+        {importStatus && (
+          <div className="px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-semibold flex items-center gap-1.5 animate-in fade-in">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{importStatus}</span>
+          </div>
+        )}
+
+        {/* Campo de Busca Rápida */}
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 text-[#949ba4] absolute left-3 top-2.5" />
+          <input
+            type="text"
+            placeholder="Filtrar habilidades por título ou palavra-chave..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={`w-full pl-8 pr-3 py-1.5 rounded-xl text-xs focus:outline-none transition-colors ${
+              theme === 'light'
+                ? 'bg-white text-black border border-black/20 placeholder-slate-400 focus:border-[#0284c7]'
+                : 'bg-[#18191c] border border-white/[0.08] text-white placeholder-[#80848e] focus:border-[#38bdf8]'
             }`}
-          >
-            Todas ({skills.length})
-          </button>
-          <button
-            onClick={() => setActiveCategory('calendar')}
-            className={`px-2.5 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all flex items-center gap-1 ${
-              activeCategory === 'calendar'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : theme === 'light'
-                ? 'bg-black/5 hover:bg-black/10 text-slate-700'
-                : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#949ba4] hover:text-white'
-            }`}
-          >
-            <Calendar className="w-3 h-3" />
-            <span>Calendário</span>
-          </button>
-          <button
-            onClick={() => setActiveCategory('pinned')}
-            className={`px-2.5 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all flex items-center gap-1 ${
-              activeCategory === 'pinned'
-                ? 'bg-amber-600 text-white shadow-sm'
-                : theme === 'light'
-                ? 'bg-black/5 hover:bg-black/10 text-slate-700'
-                : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#949ba4] hover:text-white'
-            }`}
-          >
-            <Pin className="w-3 h-3" />
-            <span>Fixadas</span>
-          </button>
-          <button
-            onClick={() => setActiveCategory('summaries')}
-            className={`px-2.5 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all flex items-center gap-1 ${
-              activeCategory === 'summaries'
-                ? 'bg-purple-600 text-white shadow-sm'
-                : theme === 'light'
-                ? 'bg-black/5 hover:bg-black/10 text-slate-700'
-                : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#949ba4] hover:text-white'
-            }`}
-          >
-            <FileText className="w-3 h-3" />
-            <span>Resumos</span>
-          </button>
-          <button
-            onClick={() => setActiveCategory('security')}
-            className={`px-2.5 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all flex items-center gap-1 ${
-              activeCategory === 'security'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : theme === 'light'
-                ? 'bg-black/5 hover:bg-black/10 text-slate-700'
-                : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#949ba4] hover:text-white'
-            }`}
-          >
-            <Shield className="w-3 h-3" />
-            <span>Segurança</span>
-          </button>
+          />
         </div>
       </div>
 
-      {/* Skills Cards Grid / Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-3.5 no-scrollbar">
-        {filteredSkills.map(skill => {
-          const Icon = skill.icon;
-          return (
+      {/* Lista Limpa e Estruturada de Habilidades */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 no-scrollbar">
+        {filteredSkills.length === 0 ? (
+          <div className="text-center py-10 text-xs text-[#949ba4] space-y-2">
+            <FileCode className="w-8 h-8 mx-auto text-[#0284c7]/40" />
+            <p className="font-medium">Nenhuma habilidade encontrada.</p>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="text-[#38bdf8] hover:underline font-bold text-[11px] inline-flex items-center gap-1"
+            >
+              <Plus className="w-3 h-3" /> Carregar arquivo .skill.md
+            </button>
+          </div>
+        ) : (
+          filteredSkills.map(skill => (
             <div
               key={skill.id}
-              className={`p-3.5 rounded-2xl border transition-all ${
+              onClick={() => setSelectedSkill(skill)}
+              className={`p-3 rounded-2xl border transition-all cursor-pointer group flex items-start justify-between gap-2.5 ${
                 theme === 'light'
-                  ? 'bg-white border-black/15 shadow-sm hover:border-black/30'
-                  : 'bg-[#18191c] border-white/[0.08] hover:border-white/[0.16] shadow-md'
+                  ? 'bg-white hover:bg-sky-50/60 border-black/15 hover:border-[#0284c7]/40 shadow-xs'
+                  : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.06] hover:border-[#0284c7]/40'
               }`}
             >
-              {/* Card Header */}
-              <div className="flex items-start justify-between gap-2.5 mb-2.5">
-                <div className="flex items-center gap-2.5">
-                  <div className={`p-2 rounded-xl bg-gradient-to-br ${skill.color} text-white shadow-md flex-shrink-0`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className={`text-xs sm:text-sm font-black tracking-tight ${theme === 'light' ? 'text-black' : 'text-white'}`}>
-                      {skill.title}
-                    </h4>
-                    <p className={`text-[11px] leading-snug mt-0.5 ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>
-                      {skill.summary}
-                    </p>
-                  </div>
+              <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                  skill.isCustom
+                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                    : 'bg-[#0284c7]/20 text-[#38bdf8] border border-[#0284c7]/30'
+                }`}>
+                  <FileCode className="w-4 h-4" />
                 </div>
 
-                <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border flex-shrink-0 ${skill.badgeColor}`}>
-                  Ativo
-                </span>
-              </div>
-
-              {/* Bullet Details */}
-              <div className={`space-y-1 pl-1 text-[11px] leading-relaxed mb-3 ${
-                theme === 'light' ? 'text-slate-700' : 'text-[#dbdee1]'
-              }`}>
-                {skill.details.map((d, idx) => (
-                  <div key={idx} className="flex items-start gap-1.5">
-                    <span className="text-emerald-500 font-bold">•</span>
-                    <span>{d}</span>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h5 className={`text-xs font-bold truncate group-hover:text-[#38bdf8] transition-colors ${
+                      theme === 'light' ? 'text-black' : 'text-white'
+                    }`}>
+                      {skill.name}
+                    </h5>
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-md bg-white/[0.06] text-[#949ba4] border border-white/[0.06] flex-shrink-0 truncate max-w-[120px]">
+                      {skill.fileName}
+                    </span>
                   </div>
-                ))}
+
+                  <p className={`text-[11px] leading-relaxed line-clamp-2 ${
+                    theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'
+                  }`}>
+                    {skill.description}
+                  </p>
+
+                  <div className="flex items-center gap-2 pt-0.5 text-[10px] text-[#949ba4]">
+                    <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Ativa
+                    </span>
+                    <span>•</span>
+                    <span>{skill.category || 'Sistema'}</span>
+                    {skill.createdAt && (
+                      <>
+                        <span>•</span>
+                        <span>{skill.createdAt}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              {/* Sample Prompts / Quick Try Buttons */}
-              <div className="pt-2.5 border-t border-black/10 dark:border-white/[0.06] space-y-1.5">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-sky-500 dark:text-sky-400 flex items-center gap-1 select-none">
-                  <Zap className="w-3 h-3" />
-                  <span>Exemplos de Comandos (clique para enviar):</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {skill.samplePrompts.map((prompt, pIdx) => (
-                    <button
-                      key={pIdx}
-                      type="button"
-                      onClick={() => onSelectPrompt && onSelectPrompt(prompt)}
-                      title={`Pedir para a arara: "${prompt}"`}
-                      className={`text-left text-[11px] px-2.5 py-1 rounded-xl border transition-all flex items-center gap-1.5 group hover:scale-[1.02] active:scale-95 ${
-                        theme === 'light'
-                          ? 'bg-slate-50 hover:bg-sky-50 border-black/15 hover:border-sky-500 text-slate-800'
-                          : 'bg-white/[0.03] hover:bg-[#0284c7]/20 border-white/[0.06] hover:border-[#0284c7]/50 text-[#dbdee1] hover:text-white'
-                      }`}
-                    >
-                      <ArrowRight className="w-3 h-3 text-sky-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
-                      <span className="truncate max-w-[260px] sm:max-w-[320px] font-medium">"{prompt}"</span>
-                    </button>
-                  ))}
+              <div className="flex items-center gap-1 flex-shrink-0 pt-1">
+                {skill.isCustom && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteSkill(skill.id, e)}
+                    title="Remover habilidade personalizada"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <div className="p-1 rounded-lg text-[#949ba4] group-hover:text-[#38bdf8] group-hover:translate-x-0.5 transition-all">
+                  <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
             </div>
-          );
-        })}
+          ))
+        )}
       </div>
 
-      {/* Footer Info */}
-      <div className={`p-3 border-t text-[11px] flex items-center justify-between flex-shrink-0 ${
-        theme === 'light' ? 'bg-slate-100 border-black/15 text-slate-600' : 'bg-[#111214] border-white/[0.06] text-[#949ba4]'
-      }`}>
-        <div className="flex items-center gap-1.5">
-          <Bot className="w-3.5 h-3.5 text-sky-400" />
-          <span>Arara Assistente v2.5 • Motor Gemini 1.5 Flash</span>
+      {/* Modal / Janela Detalhando o Conteúdo e o que a Skill Executa */}
+      {selectedSkill && (
+        <div
+          onClick={() => setSelectedSkill(null)}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full max-w-lg max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border ${
+              theme === 'light'
+                ? 'bg-white text-black border-2 border-black'
+                : 'bg-[#1a1b1e] border-white/[0.12] text-[#dbdee1]'
+            }`}
+          >
+            {/* Header do Modal de Detalhes */}
+            <div className={`p-4 border-b flex items-start justify-between gap-3 flex-shrink-0 ${
+              theme === 'light' ? 'bg-sky-50 border-black/15' : 'bg-[#141517] border-white/[0.08]'
+            }`}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-[#0284c7]/20 border border-[#0284c7]/40 flex items-center justify-center text-[#38bdf8] flex-shrink-0 shadow-md">
+                  <FileCode className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className={`text-sm font-extrabold truncate ${theme === 'light' ? 'text-black' : 'text-white'}`}>
+                    {selectedSkill.name}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/[0.06] text-[#38bdf8] border border-white/[0.08]">
+                      {selectedSkill.fileName}
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Habilidade Pronta
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedSkill(null)}
+                className={`p-1.5 rounded-xl transition-colors ${
+                  theme === 'light' ? 'hover:bg-black/10 text-slate-700' : 'hover:bg-white/[0.08] text-[#949ba4] hover:text-white'
+                }`}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Conteúdo com Scroll: O Que a Skill Executa + Documentação Markdown */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 no-scrollbar">
+              {/* O Que Esta Skill Executa */}
+              <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                theme === 'light'
+                  ? 'bg-sky-50/70 border-sky-200 text-slate-800'
+                  : 'bg-[#0284c7]/10 border-[#0284c7]/30 text-[#dbdee1]'
+              }`}>
+                <div className="flex items-center gap-2 text-xs font-bold text-[#0284c7] dark:text-[#38bdf8]">
+                  <Zap className="w-4 h-4" />
+                  <span>O que esta habilidade executa:</span>
+                </div>
+                <p className="text-xs leading-relaxed font-medium">
+                  {selectedSkill.description}
+                </p>
+              </div>
+
+              {/* Documento Markdown Completo (.skill.md) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-[#949ba4]">
+                  <span className="flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5" />
+                    Instruções Técnicas (.skill.md)
+                  </span>
+                  <span className="text-[10px] uppercase tracking-wider">Markdown format</span>
+                </div>
+
+                <div className={`p-3.5 rounded-2xl border font-mono text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap ${
+                  theme === 'light'
+                    ? 'bg-slate-50 border-black/15 text-slate-800'
+                    : 'bg-[#111214] border-white/[0.08] text-[#dbdee1]'
+                }`}>
+                  {selectedSkill.content}
+                </div>
+              </div>
+
+              {/* Exemplos de Prompts para Execução */}
+              {selectedSkill.samplePrompts && selectedSkill.samplePrompts.length > 0 && (
+                <div className="space-y-2 pt-1">
+                  <div className="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Executar no Chat com o Assistente:</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {selectedSkill.samplePrompts.map((prompt, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          if (onSelectPrompt) {
+                            onSelectPrompt(prompt);
+                          }
+                          setSelectedSkill(null);
+                        }}
+                        className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-center justify-between group hover:scale-[1.01] ${
+                          theme === 'light'
+                            ? 'bg-slate-50 hover:bg-sky-50 border-black/15 hover:border-sky-500 text-black'
+                            : 'bg-white/[0.04] hover:bg-[#0284c7]/20 border-white/[0.06] hover:border-[#0284c7]/40 text-white'
+                        }`}
+                      >
+                        <span className="text-xs font-medium truncate pr-2">"{prompt}"</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-[#38bdf8] group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Rodapé com Ações */}
+            <div className={`p-3 border-t flex items-center justify-between gap-2 flex-shrink-0 ${
+              theme === 'light' ? 'bg-slate-100 border-black/15' : 'bg-[#141517] border-white/[0.06]'
+            }`}>
+              <div className="text-[11px] text-[#949ba4] truncate">
+                Disponível na plataforma DiskAI
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedSkill(null)}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold text-[#949ba4] hover:text-white"
+                >
+                  Fechar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const promptToRun = selectedSkill.samplePrompts?.[0] || `Executar instrução da habilidade ${selectedSkill.name}`;
+                    if (onSelectPrompt) {
+                      onSelectPrompt(promptToRun);
+                    }
+                    setSelectedSkill(null);
+                  }}
+                  className="px-4 py-1.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Executar no Chat</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <span className="font-semibold text-emerald-400">100% Operacional</span>
-      </div>
-    </div>
-  );
-
-  if (isEmbedded) {
-    return content;
-  }
-
-  return (
-    <div
-      onClick={e => e.stopPropagation()}
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 select-none animate-in fade-in duration-200"
-    >
-      <div className={`w-full max-w-xl h-[620px] max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border ${
-        theme === 'light'
-          ? 'bg-white border-black/20 text-black'
-          : 'bg-[#1a1b1e] border-white/[0.12] text-[#dbdee1]'
-      }`}>
-        {content}
-      </div>
+      )}
     </div>
   );
 };

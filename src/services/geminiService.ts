@@ -1,5 +1,14 @@
 import { Appointment } from './supabase';
 
+export interface AssistantAttachment {
+  id?: string;
+  name: string;
+  type: string;
+  size?: number;
+  dataUrl?: string;
+  textContent?: string;
+}
+
 export interface DiskaiPlatformContext {
   server_name?: string;
   channel_id?: string;
@@ -117,6 +126,19 @@ const buildSystemInstruction = (ctx: DiskaiPlatformContext): string => {
     .map(p => `• "${p.content}"`)
     .join('\n');
 
+  // Carregar habilidades ativas (.skill.md) registradas pelo usuário
+  let customSkillsStr = '';
+  try {
+    const savedSkills = localStorage.getItem('diskai_custom_skills');
+    if (savedSkills) {
+      const parsed = JSON.parse(savedSkills);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        customSkillsStr = '\nHABILIDADES EXPANDIDAS E ARQUIVOS .SKILL.MD ATIVOS:\n' +
+          parsed.map((s: any) => `### Habilidade: ${s.name}\n${s.content || s.description}`).join('\n\n');
+      }
+    }
+  } catch {}
+
   return `Você é a Arara Assistente, o mascote 3D oficial, carismático, fofo e prestativo da plataforma DiskAI no Brasil!
 Você é uma arara azul de óculos escuros elegantes, altamente organizada e focada na produtividade da equipe brasileira.
 Seu tom de voz é acolhedor, vibrante, gentil, inteligente e organizado, usando emojis alegres (🦜, 💙, ✨, 🚀, 📅, 📌).
@@ -127,6 +149,8 @@ SEU PAPEL & CONHECIMENTO DO ECOSSISTEMA DISKAI:
 - CONTROLE DE ACESSO: Você monitora solicitações de novos membros e alerta administradores sobre aprovações pendentes.
 - CALENDÁRIO & TAREFAS: Você gerencia compromissos e to-dos com facilidade, agendando reuniões e marcando tarefas como concluídas.
 - RESUMOS INTELIGENTES: Você resume discussões longas de canais e reuniões gravadas em atas executivas com pontos de ação.
+- VISÃO COMPUTACIONAL & LEITURA DE DOCUMENTOS: Você é capaz de analisar fotos, imagens, documentos de texto, planilhas e arquivos Markdown enviados pelo usuário e responder dúvidas ou extrair dados com precisão.
+${customSkillsStr}
 
 CONTEXTO EM TEMPO REAL DA PLATAFORMA DISKAI:
 - Servidor Atual: ${ctx.server_name || 'DiskAI Oficial'}
@@ -168,7 +192,8 @@ Responda em português brasileiro com simpatia, prestatividade e clareza, sempre
 export const queryGeminiEcosystem = async (
   prompt: string,
   history: Array<{ role: 'user' | 'assistant'; content: string }>,
-  ctx: DiskaiPlatformContext
+  ctx: DiskaiPlatformContext,
+  attachments?: AssistantAttachment[]
 ): Promise<MacawAIResponse | null> => {
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
@@ -177,6 +202,35 @@ export const queryGeminiEcosystem = async (
 
   try {
     const systemInstruction = buildSystemInstruction(ctx);
+
+    // Montar partes da mensagem final do usuário com suporte a anexos (imagens e documentos)
+    const userParts: any[] = [];
+
+    if (attachments && attachments.length > 0) {
+      for (const att of attachments) {
+        if (att.dataUrl && att.dataUrl.startsWith('data:image/')) {
+          const mimeType = att.type || 'image/png';
+          const base64Data = att.dataUrl.includes(',') ? att.dataUrl.split(',')[1] : att.dataUrl;
+          userParts.push({
+            inlineData: {
+              mimeType,
+              data: base64Data
+            }
+          });
+          userParts.push({ text: `[Imagem anexada: "${att.name}"]` });
+        } else if (att.textContent) {
+          userParts.push({
+            text: `[DOCUMENTO ANEXADO: "${att.name}"]\n${att.textContent.slice(0, 15000)}\n[FIM DO DOCUMENTO "${att.name}"]`
+          });
+        } else {
+          userParts.push({
+            text: `[ARQUIVO ANEXADO: "${att.name}" (${att.type || 'documento'})]`
+          });
+        }
+      }
+    }
+
+    userParts.push({ text: prompt });
 
     const contents = [
       {
@@ -193,7 +247,7 @@ export const queryGeminiEcosystem = async (
       })),
       {
         role: 'user',
-        parts: [{ text: prompt }]
+        parts: userParts
       }
     ];
 

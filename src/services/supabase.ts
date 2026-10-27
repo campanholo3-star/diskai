@@ -8,7 +8,7 @@ import {
   DEFAULT_PLACEHOLDER_AVATAR
 } from '../utils/imageUtils';
 import { isSafeFileName } from '../utils/securityUtils';
-import { queryGeminiEcosystem, DiskaiPlatformContext } from './geminiService';
+import { queryGeminiEcosystem, DiskaiPlatformContext, AssistantAttachment } from './geminiService';
 
 // Credenciais de conexão Supabase - gerenciadas silenciosamente pelo backend (.env)
 const DEFAULT_SUPABASE_URL =
@@ -1343,6 +1343,7 @@ export const askMacawAssistant = async (params: {
   user_name?: string;
   user_id?: string;
   platformContext?: DiskaiPlatformContext;
+  attachments?: AssistantAttachment[];
 }): Promise<MacawAssistantResult> => {
   const ctx: DiskaiPlatformContext = params.platformContext || {
     server_name: params.server_name,
@@ -1357,7 +1358,8 @@ export const askMacawAssistant = async (params: {
     const geminiRes = await queryGeminiEcosystem(
       params.message,
       params.conversation_history || [],
-      ctx
+      ctx,
+      params.attachments
     );
 
     if (geminiRes) {

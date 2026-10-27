@@ -3,7 +3,6 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
   Sparkles,
   Calendar,
-  Pin,
   FileText,
   Send,
   X,
@@ -14,26 +13,28 @@ import {
   Clock,
   Users,
   MessageSquare,
-  Bot,
   ChevronRight,
   RefreshCw,
-  ExternalLink,
   ShieldAlert,
   UserCheck,
   UserX,
   ListTodo,
   CheckCheck,
-  Activity
+  Paperclip,
+  Image as ImageIcon,
+  Lock,
+  Hash
 } from 'lucide-react';
 import { useDiskai } from '../../context/DiskaiContext';
-import { askMacawAssistant, Appointment, toggleAppointmentStatus } from '../../services/supabase';
+import { askMacawAssistant, toggleAppointmentStatus } from '../../services/supabase';
+import { AssistantAttachment } from '../../services/geminiService';
 import { Macaw3DViewer, AraraGesture } from './Macaw3DViewer';
 import { MacawSkillsGuideModal } from './MacawSkillsGuideModal';
 
 // Animação de flutuação perpétua e fluida via Framer Motion (não estática sob nenhuma hipótese)
 const mascotFloatVariants: Variants = {
   float: {
-    y: [0, -9, 0],
+    y: [0, -8, 0],
     rotate: [0, 1, -1, 0],
     transition: {
       duration: 3.2,
@@ -54,10 +55,8 @@ export const MacawMascot: React.FC = () => {
     refreshAppointments,
     addAppointment,
     removeAppointment,
-    pinnedMessages,
-    unpinMessage,
-    generateChatSummary,
-    isGeneratingChatSummary,
+    sendMessage,
+    updateChannel,
     macawModalOpen,
     setMacawModalOpen,
     participants,
@@ -77,7 +76,8 @@ export const MacawMascot: React.FC = () => {
   );
   const pendingCount = pendingUsers.length;
 
-  type MascotTab = 'chat' | 'skills' | 'calendar' | 'pinned' | 'requests';
+  // Removida a opção 'pinned' conforme requisito 5
+  type MascotTab = 'chat' | 'skills' | 'calendar' | 'requests';
   const [activeTab, setActiveTab] = useState<MascotTab>('chat');
 
   // Gestures State
@@ -85,17 +85,21 @@ export const MacawMascot: React.FC = () => {
   const [gestureKey, setGestureKey] = useState<number>(0);
   const [gestureQueue, setGestureQueue] = useState<string[]>([]);
 
+  // Todos os canais disponíveis do servidor ativo
+  const allChannels = (activeServer?.categories || []).flatMap(cat => cat.channels);
+
   const [chatMessages, setChatMessages] = useState<Array<{
     role: 'user' | 'assistant';
     content: string;
     time: string;
+    attachments?: AssistantAttachment[];
     actionTaken?: string | null;
     appointment?: any;
     gesture?: string;
   }>>([
     {
       role: 'assistant',
-      content: `Oi, ${currentUser.name || 'amigo(a)'}! 🦜💙 Sou a sua **Arara Assistente** do DiskAI!\n\nPosso gerenciar **agendamentos e tarefas**, listar **mensagens fixadas**, alertar sobre **novos usuários (Admin)** ou **gerar resumos com IA** em segundos. Como posso te ajudar agora? ✨`,
+      content: `Oi, ${currentUser.name || 'amigo(a)'}! 🦜💙 Sou o mascote assistente do DiskAI!\n\nPosso gerenciar **tarefas com aviso em canal**, listar **habilidades (.skill.md)**, analisar **imagens e documentos anexados** ou alertar sobre **acessos por canal**. Como posso te ajudar agora? ✨`,
       time: 'Agora',
       gesture: 'ARARA_WAVE_WING'
     }
@@ -103,11 +107,22 @@ export const MacawMascot: React.FC = () => {
 
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Anexos do chat com a IA
+  const [stagedAiAttachments, setStagedAiAttachments] = useState<AssistantAttachment[]>([]);
+  const aiFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Modal de Criar Tarefa / Reunião com pessoas específicas e canal alvo
   const [showAddAppModal, setShowAddAppModal] = useState(false);
   const [newAppTitle, setNewAppTitle] = useState('');
   const [newAppDate, setNewAppDate] = useState('');
   const [newAppTime, setNewAppTime] = useState('');
   const [newAppType, setNewAppType] = useState<'task' | 'meeting'>('task');
+  const [selectedAttendees, setSelectedAttendees] = useState<string[]>([currentUser.name || 'Você']);
+  const [targetChannelId, setTargetChannelId] = useState<string>(activeChannel?.id || '');
+
+  // Gerenciamento Granular de Permissões por Canal por Usuário
+  const [userSelectedChannels, setUserSelectedChannels] = useState<Record<string, string[]>>({});
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -116,6 +131,12 @@ export const MacawMascot: React.FC = () => {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatMessages, macawModalOpen, activeTab]);
+
+  useEffect(() => {
+    if (activeChannel?.id && !targetChannelId) {
+      setTargetChannelId(activeChannel.id);
+    }
+  }, [activeChannel?.id]);
 
   // Trigger gesture directly
   const triggerGesture = useCallback((gestureName: AraraGesture, sequence?: string[]) => {
@@ -137,7 +158,7 @@ export const MacawMascot: React.FC = () => {
     }
   }, []);
 
-  // Reagir a troca de canais (cumprimenta com asas ou aceno)
+  // Reagir a troca de canais
   const prevChannelIdRef = useRef<string | undefined>(activeChannel?.id);
   useEffect(() => {
     if (activeChannel?.id && prevChannelIdRef.current && activeChannel.id !== prevChannelIdRef.current) {
@@ -148,7 +169,7 @@ export const MacawMascot: React.FC = () => {
     prevChannelIdRef.current = activeChannel?.id;
   }, [activeChannel?.id]);
 
-  // Reagir a troca de servidores (boas-vindas abrindo as asas)
+  // Reagir a troca de servidores
   const prevServerIdRef = useRef<string | undefined>(activeServer?.id);
   useEffect(() => {
     if (activeServer?.id && prevServerIdRef.current && activeServer.id !== prevServerIdRef.current) {
@@ -157,7 +178,7 @@ export const MacawMascot: React.FC = () => {
     prevServerIdRef.current = activeServer?.id;
   }, [activeServer?.id]);
 
-  // Reagir a tarefas concluídas ou novos compromissos adicionados
+  // Reagir a tarefas concluídas
   const prevCompletedCountRef = useRef(appointments.filter(a => a.status === 'completed').length);
   useEffect(() => {
     const currentCompleted = appointments.filter(a => a.status === 'completed').length;
@@ -167,27 +188,12 @@ export const MacawMascot: React.FC = () => {
     prevCompletedCountRef.current = currentCompleted;
   }, [appointments]);
 
-  // Reagir a atividades gerais da plataforma (mensagens enviadas no chat ou DM)
-  useEffect(() => {
-    const handleActivity = (e: any) => {
-      const type = e.detail?.type;
-      if (type === 'chat-message') {
-        triggerGesture('ARARA_NOD_YES');
-      } else if (type === 'appointment-added') {
-        triggerGesture('ARARA_MEETING_REMINDER');
-      }
-    };
-    window.addEventListener('diskai:activity', handleActivity);
-    return () => window.removeEventListener('diskai:activity', handleActivity);
-  }, []);
-
-  // Direct click on the 3D Arara object - interações vivas e diversificadas
+  // Reagir a cliques no mascote 3D
   const handleMascotClick = () => {
     if (!macawModalOpen) {
       setMacawModalOpen(true);
       triggerGesture('ARARA_WAVE_WING');
     } else {
-      // Lively interactive reactions on click
       const gestures: AraraGesture[] = [
         'ARARA_WAVE_WING',
         'ARARA_OPEN_WINGS',
@@ -205,8 +211,6 @@ export const MacawMascot: React.FC = () => {
     setActiveTab(tab);
     if (tab === 'calendar') {
       triggerGesture('ARARA_PRESENT_LEFT');
-    } else if (tab === 'pinned') {
-      triggerGesture('ARARA_PRESENT_RIGHT');
     } else if (tab === 'requests') {
       triggerGesture('ARARA_ALERT_REMINDER');
     } else {
@@ -214,21 +218,81 @@ export const MacawMascot: React.FC = () => {
     }
   };
 
+  // Upload de anexos para a IA (Imagens e Documentos)
+  const handleAiFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      const isImg = file.type.startsWith('image/');
+      const reader = new FileReader();
+
+      if (isImg) {
+        reader.onload = (event) => {
+          const dataUrl = event.target?.result as string;
+          setStagedAiAttachments(prev => [
+            ...prev,
+            {
+              id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+              name: file.name,
+              type: file.type || 'image/png',
+              size: file.size,
+              dataUrl
+            }
+          ]);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Leitura de documentos e arquivos de texto / markdown
+        reader.onload = (event) => {
+          const textContent = event.target?.result as string;
+          setStagedAiAttachments(prev => [
+            ...prev,
+            {
+              id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+              name: file.name,
+              type: file.type || 'text/plain',
+              size: file.size,
+              textContent
+            }
+          ]);
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    e.target.value = '';
+  };
+
+  const removeStagedAiAttachment = (id?: string) => {
+    if (!id) return;
+    setStagedAiAttachments(prev => prev.filter(a => a.id !== id));
+  };
+
+  // Envio de mensagem com suporte completo a anexos para a IA
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
-    if (!text || loading) return;
+    const currentAttachments = [...stagedAiAttachments];
+
+    if ((!text && currentAttachments.length === 0) || loading) return;
 
     setInputText('');
+    setStagedAiAttachments([]);
+
     const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
     const newHistory = [
       ...chatMessages,
-      { role: 'user' as const, content: text, time: nowTime }
+      {
+        role: 'user' as const,
+        content: text || (currentAttachments.length > 0 ? `Analise o(s) anexo(s) enviado(s): ${currentAttachments.map(a => a.name).join(', ')}` : ''),
+        time: nowTime,
+        attachments: currentAttachments
+      }
     ];
     setChatMessages(newHistory);
     setLoading(true);
 
-    // Arara entra em estado THINKING enquanto analisa a solicitação
     triggerGesture('ARARA_THINKING');
 
     try {
@@ -240,13 +304,14 @@ export const MacawMascot: React.FC = () => {
       }));
 
       const res = await askMacawAssistant({
-        message: text,
+        message: text || `Por favor analise o(s) arquivo(s) anexado(s): ${currentAttachments.map(a => a.name).join(', ')}`,
         conversation_history: newHistory.map(m => ({ role: m.role, content: m.content })),
         channel_id: activeChannel?.id || 'ch-geral',
         channel_name: activeChannel?.name || 'geral',
         server_name: activeServer?.name || 'DiskAI',
         user_name: currentUser.name || 'Membro',
         user_id: currentUser.id,
+        attachments: currentAttachments,
         platformContext: {
           server_name: activeServer?.name || 'DiskAI',
           channel_id: activeChannel?.id || 'ch-geral',
@@ -256,11 +321,6 @@ export const MacawMascot: React.FC = () => {
           user_role: currentUser.role,
           channel_messages: currentChannelMsgs,
           appointments,
-          pinned_messages: (pinnedMessages[activeChannel?.id || ''] || []).map(p => ({
-            id: p.id,
-            content: p.content,
-            authorName: p.authorName
-          })),
           pending_users_count: pendingCount
         }
       });
@@ -270,7 +330,6 @@ export const MacawMascot: React.FC = () => {
         await refreshAppointments();
       }
 
-      // Dispara gesto recebido da IA
       const chosenGesture = (res.gesture || 'ARARA_NOD_YES') as AraraGesture;
       triggerGesture(chosenGesture, res.gestureSequence);
 
@@ -292,7 +351,7 @@ export const MacawMascot: React.FC = () => {
         ...prev,
         {
           role: 'assistant',
-          content: 'ARARA_SHAKE_NO\n\n🦜 Opa, tive um tropeço momentâneo no ninho! Mas estou pronta de novo. Pode repetir sua mensagem?',
+          content: 'ARARA_SHAKE_NO\n\n🦜 Houve uma oscilação na resposta, mas já estou pronta novamente. Pode reenviar sua dúvida?',
           time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           gesture: 'ARARA_SHAKE_NO'
         }
@@ -308,6 +367,7 @@ export const MacawMascot: React.FC = () => {
     await refreshAppointments();
   };
 
+  // Criação de Tarefa/Reunião com seleção de pessoas específicas e aviso automático no canal
   const handleCreateAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAppTitle.trim()) return;
@@ -322,15 +382,18 @@ export const MacawMascot: React.FC = () => {
     }
 
     const isTask = newAppType === 'task';
+    const targetChannel = allChannels.find(c => c.id === targetChannelId) || activeChannel;
+    const attendeesList = selectedAttendees.length > 0 ? selectedAttendees : [currentUser.name || 'Você'];
+
     const appData = {
       title: newAppTitle.trim(),
       description: isTask
-        ? `Tarefa da equipe registrada no canal #${activeChannel?.name || 'geral'}`
-        : `Reunião agendada via Arara Assistente`,
+        ? `Tarefa registrada com aviso no canal #${targetChannel?.name || 'geral'}`
+        : `Reunião agendada com aviso no canal #${targetChannel?.name || 'geral'}`,
       start_time: startIso,
-      channel_id: activeChannel?.id || 'ch-geral',
+      channel_id: targetChannel?.id || 'ch-geral',
       server_id: activeServer?.name || 'DiskAI',
-      attendees: [currentUser.name || 'Você'],
+      attendees: attendeesList,
       status: 'scheduled' as const
     };
 
@@ -343,6 +406,21 @@ export const MacawMascot: React.FC = () => {
     await addAppointment(appData);
     await refreshAppointments();
 
+    // Envio automatizado do aviso diretamente ao canal alvo selecionado no servidor
+    const dateFormatted = newAppDate
+      ? `${new Date(startIso).toLocaleDateString('pt-BR')} às ${newAppTime || '14:00'}`
+      : 'Data flexível';
+
+    const announcement = `${isTask ? '📝' : '📅'} **Novo ${isTask ? 'Compromisso / Tarefa' : 'Agendamento de Reunião'} registrado!**\n\n📌 **${newAppTitle.trim()}**\n🕒 **Quando:** ${dateFormatted}\n👥 **Envolvidos:** ${attendeesList.join(', ')}\n📍 **Canal de referência:** #${targetChannel?.name || 'geral'}\n\n*Aviso gerado automaticamente no servidor.*`;
+
+    if (targetChannel?.id) {
+      try {
+        sendMessage(announcement, targetChannel.id, []);
+      } catch (err) {
+        console.warn('[Macaw] Aviso automático no canal:', err);
+      }
+    }
+
     setNewAppTitle('');
     setNewAppDate('');
     setNewAppTime('');
@@ -353,19 +431,67 @@ export const MacawMascot: React.FC = () => {
       {
         role: 'assistant',
         content: isTask
-          ? `ARARA_SUCCESS\n\n🦜 Tarefa **"${appData.title}"** salva com sucesso! Você pode marcá-la como concluída a qualquer momento. ✅`
-          : `ARARA_MEETING_REMINDER\n\n🦜 Oba! Adicionei a reunião **"${appData.title}"** à sua agenda do DiskAI! 📅✨`,
+          ? `ARARA_SUCCESS\n\n🦜 Tarefa **"${appData.title}"** salva com sucesso! O aviso foi publicado no canal **#${targetChannel?.name || 'geral'}** para ${attendeesList.join(', ')}. ✅`
+          : `ARARA_MEETING_REMINDER\n\n🦜 Reunião **"${appData.title}"** agendada! Notificação postada no canal **#${targetChannel?.name || 'geral'}**. 📅✨`,
         time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
         gesture: isTask ? 'ARARA_SUCCESS' : 'ARARA_MEETING_REMINDER'
       }
     ]);
   };
 
-  const channelPins = (activeChannel && pinnedMessages[activeChannel.id]) || [];
+  // Aprovação granular de participante por canal
+  const handleApproveWithChannels = (userId: string, userName: string) => {
+    triggerGesture('ARARA_NOD_YES', ['ARARA_NOD_YES', 'ARARA_RETURN_NEUTRAL', 'ARARA_IDLE_LOOP']);
+
+    const chosenChannelIds = userSelectedChannels[userId] || allChannels.map(c => c.id);
+    const chosenNames = allChannels
+      .filter(c => chosenChannelIds.includes(c.id))
+      .map(c => `#${c.name}`);
+
+    // Aprova o participante no sistema
+    approveParticipant(userId);
+
+    // Atualiza individualmente as permissões nos canais alvo
+    if (activeServer) {
+      allChannels.forEach(ch => {
+        if (ch.isPrivate || (ch.allowedMemberIds && ch.allowedMemberIds.length > 0)) {
+          const currentAllowed = ch.allowedMemberIds || [];
+          if (chosenChannelIds.includes(ch.id)) {
+            const updated = Array.from(new Set([...currentAllowed, userId]));
+            updateChannel(activeServer.id, ch.id, { allowedMemberIds: updated });
+          } else {
+            const updated = currentAllowed.filter(id => id !== userId);
+            updateChannel(activeServer.id, ch.id, { allowedMemberIds: updated });
+          }
+        }
+      });
+    }
+
+    setChatMessages(prev => [
+      ...prev,
+      {
+        role: 'assistant',
+        content: `ARARA_NOD_YES\n\n🦜 Acesso do participante **${userName}** liberado com controle individual nos canais: ${chosenNames.join(', ')}! 🔐✨`,
+        time: 'Agora',
+        gesture: 'ARARA_NOD_YES'
+      }
+    ]);
+  };
+
+  // Alternar canal individualmente para um usuário pendente
+  const toggleUserChannel = (userId: string, channelId: string) => {
+    setUserSelectedChannels(prev => {
+      const current = prev[userId] || allChannels.map(c => c.id);
+      const updated = current.includes(channelId)
+        ? current.filter(id => id !== channelId)
+        : [...current, channelId];
+      return { ...prev, [userId]: updated };
+    });
+  };
 
   return (
     <>
-      {/* Balloon Chat Dialog (posicionado de forma limpa ao lado da Arara no desktop, e acima dela no mobile) */}
+      {/* Balloon Chat Dialog (posicionado ao lado da Arara, alinhado à geometria da barra de chat) */}
       <AnimatePresence>
         {macawModalOpen && (
           <motion.div
@@ -373,29 +499,27 @@ export const MacawMascot: React.FC = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 16 }}
             transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-            className={`fixed bottom-[240px] left-3 right-3 sm:left-auto sm:bottom-[82px] sm:right-[195px] md:right-[205px] z-50 pointer-events-auto w-[calc(100vw-24px)] sm:w-[420px] md:w-[450px] h-[520px] max-h-[calc(100vh-270px)] sm:max-h-[calc(100vh-165px)] min-h-[300px] rounded-3xl shadow-2xl flex flex-col overflow-hidden font-sans border transition-colors ${
+            className={`fixed bottom-[185px] left-3 right-3 sm:left-auto sm:bottom-[20px] sm:right-[180px] md:right-[195px] z-50 pointer-events-auto w-[calc(100vw-24px)] sm:w-[430px] md:w-[460px] h-[540px] max-h-[calc(100vh-210px)] sm:max-h-[calc(100vh-100px)] min-h-[320px] rounded-3xl shadow-2xl flex flex-col overflow-hidden font-sans border transition-colors ${
               theme === 'light'
                 ? 'bg-white text-black border-2 border-black shadow-[0_16px_40px_rgba(0,0,0,0.2)]'
                 : 'bg-[#1a1b1e]/95 backdrop-blur-2xl border border-white/[0.12] text-[#dbdee1] shadow-[0_20px_50px_rgba(0,0,0,0.6)]'
             }`}
           >
-            {/* Header */}
+            {/* Header limpo (sem a identificação textual "Arara Assistente" conforme requisito 2) */}
             <div className={`px-4 py-3 flex items-center justify-between flex-shrink-0 border-b ${
               theme === 'light'
                 ? 'bg-sky-50 border-black/20'
                 : 'bg-gradient-to-r from-[#0ea5e9]/20 via-[#0284c7]/20 to-[#38bdf8]/10 border-white/[0.08]'
             }`}>
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-[#0284c7]/20 border border-[#0284c7]/40 flex items-center justify-center overflow-hidden">
-                  <img src="/arara-mascote.png" alt="Arara" className="w-6 h-6 object-contain" />
+                <div className="w-8 h-8 rounded-full bg-[#0284c7]/20 border border-[#0284c7]/40 flex items-center justify-center overflow-hidden shadow-xs">
+                  <img src="/arara-mascote.png" alt="Mascote" className="w-6 h-6 object-contain" />
                 </div>
-                <div>
-                  <h3 className={`text-sm font-extrabold tracking-tight ${theme === 'light' ? 'text-black' : 'text-white'}`}>
-                    Arara Assistente
-                  </h3>
-                  <div className={`text-[11px] font-medium ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>
-                    Assistente de Produtividade & IA
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className={`text-xs font-bold tracking-wide uppercase ${theme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
+                    IA Ativa
+                  </span>
                 </div>
               </div>
 
@@ -426,19 +550,19 @@ export const MacawMascot: React.FC = () => {
                 <div className="flex items-center gap-1.5 font-medium truncate">
                   <ShieldAlert className="w-3.5 h-3.5 text-amber-400 animate-pulse flex-shrink-0" />
                   <span className="truncate">
-                    <strong>{pendingCount}</strong> novo(s) usuário(s) aguardando aprovação!
+                    <strong>{pendingCount}</strong> pedido(s) de acesso pendente(s)
                   </span>
                 </div>
                 <button
                   onClick={() => handleTabChange('requests')}
                   className="px-2 py-0.5 rounded-lg bg-amber-500/25 hover:bg-amber-500/40 text-amber-100 font-bold text-[10px] transition-all flex-shrink-0 ml-1.5"
                 >
-                  Ver
+                  Gerenciar
                 </button>
               </div>
             )}
 
-            {/* Navigation Tabs */}
+            {/* Navigation Tabs (Opção 'Fixadas' completamente removida conforme requisito 5) */}
             <div className={`flex items-center border-b px-2.5 py-1.5 gap-1 flex-shrink-0 text-xs font-semibold overflow-x-auto no-scrollbar ${
               theme === 'light' ? 'bg-slate-50 border-black/15' : 'bg-[#141517]/80 border-white/[0.06]'
             }`}>
@@ -484,20 +608,6 @@ export const MacawMascot: React.FC = () => {
                 <span>Tarefas ({appointments.length})</span>
               </button>
 
-              <button
-                onClick={() => handleTabChange('pinned')}
-                className={`flex-1 py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all whitespace-nowrap ${
-                  activeTab === 'pinned'
-                    ? 'bg-[#0284c7] text-white shadow-md'
-                    : theme === 'light'
-                    ? 'text-slate-600 hover:text-black hover:bg-black/5'
-                    : 'text-[#949ba4] hover:text-white hover:bg-white/[0.04]'
-                }`}
-              >
-                <Pin className="w-3.5 h-3.5" />
-                <span>Fixadas ({channelPins.length})</span>
-              </button>
-
               {isAdmin && (
                 <button
                   onClick={() => handleTabChange('requests')}
@@ -521,26 +631,15 @@ export const MacawMascot: React.FC = () => {
             {/* Tab: Chat */}
             {activeTab === 'chat' && (
               <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Quick Skills Guide Access Pill */}
-                <div className="p-2.5 pb-0 flex-shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => handleTabChange('skills')}
-                    className={`w-full p-2 rounded-xl border transition-all flex items-center justify-between group hover:scale-[1.01] active:scale-95 ${
-                      theme === 'light'
-                        ? 'bg-gradient-to-r from-sky-50 to-indigo-50 border-sky-200 text-sky-950 shadow-xs'
-                        : 'bg-gradient-to-r from-[#0284c7]/15 to-[#6366f1]/15 hover:from-[#0284c7]/25 hover:to-[#6366f1]/25 border-sky-500/30 text-sky-200 shadow-sm'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse flex-shrink-0" />
-                      <span className="text-[11px] font-bold truncate">
-                        Guia de Habilidades: veja o que sei fazer!
-                      </span>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 opacity-70 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
-                  </button>
-                </div>
+                {/* Hidden File Input para upload de Imagens e Documentos no chat */}
+                <input
+                  type="file"
+                  ref={aiFileInputRef}
+                  onChange={handleAiFileSelect}
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.txt,.md,.json,.csv,.ts,.tsx,.js,.py"
+                  className="hidden"
+                />
 
                 {/* Messages scroll area */}
                 <div className="flex-1 p-3 overflow-y-auto space-y-3 no-scrollbar">
@@ -557,9 +656,8 @@ export const MacawMascot: React.FC = () => {
                         {msg.role === 'assistant' && (
                           <div
                             className="w-7 h-7 rounded-full bg-[#0f172a] border border-[#0284c7]/40 flex-shrink-0 flex items-center justify-center overflow-hidden"
-                            title="Arara Assistente"
                           >
-                            <img src="/arara-mascote.png" alt="Arara" className="w-5 h-5 object-contain" />
+                            <img src="/arara-mascote.png" alt="Mascote" className="w-5 h-5 object-contain" />
                           </div>
                         )}
 
@@ -572,28 +670,37 @@ export const MacawMascot: React.FC = () => {
                               : 'bg-white/[0.05] border border-white/[0.08] text-[#dbdee1] rounded-bl-sm shadow'
                           }`}
                         >
+                          {/* Anexos exibidos dentro da mensagem do usuário */}
+                          {msg.attachments && msg.attachments.length > 0 && (
+                            <div className="mb-2 flex flex-wrap gap-1.5">
+                              {msg.attachments.map((att, attIdx) => (
+                                <div
+                                  key={attIdx}
+                                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/20 text-[10px] font-medium border border-white/20"
+                                >
+                                  {att.dataUrl ? (
+                                    <ImageIcon className="w-3 h-3 text-amber-300" />
+                                  ) : (
+                                    <FileText className="w-3 h-3 text-sky-300" />
+                                  )}
+                                  <span className="truncate max-w-[130px]">{att.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
                           <div className="whitespace-pre-wrap font-sans">{cleanText}</div>
 
-                          {/* Interactive Task / Appointment Card inside message */}
+                          {/* Card de Tarefa/Reunião na mensagem */}
                           {msg.appointment && (
                             <div className="mt-2.5 p-2.5 bg-[#0284c7]/15 border border-[#0284c7]/30 rounded-xl text-[11px] space-y-2">
                               <div className="flex items-center justify-between gap-1">
                                 <div className="font-bold text-white flex items-center gap-1.5 truncate">
-                                  {msg.appointment.title.toLowerCase().includes('tarefa') || msg.actionTaken === 'create_task' ? (
-                                    <ListTodo className="w-3.5 h-3.5 text-[#38bdf8] flex-shrink-0" />
-                                  ) : (
-                                    <Calendar className="w-3.5 h-3.5 text-[#38bdf8] flex-shrink-0" />
-                                  )}
-                                  <span className={`truncate ${appointments.find(a => a.id === msg.appointment.id)?.status === 'completed' ? 'line-through text-[#949ba4]' : ''}`}>
-                                    {msg.appointment.title}
-                                  </span>
+                                  <ListTodo className="w-3.5 h-3.5 text-[#38bdf8] flex-shrink-0" />
+                                  <span className="truncate">{msg.appointment.title}</span>
                                 </div>
-                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                                  appointments.find(a => a.id === msg.appointment.id)?.status === 'completed'
-                                    ? 'bg-[#23a55a]/20 text-[#23a55a] border border-[#23a55a]/30'
-                                    : 'bg-[#0284c7]/30 text-[#38bdf8] border border-[#38bdf8]/30'
-                                }`}>
-                                  {appointments.find(a => a.id === msg.appointment.id)?.status === 'completed' ? 'Concluída' : 'Pendente'}
+                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#0284c7]/30 text-[#38bdf8] border border-[#38bdf8]/30">
+                                  Registrado
                                 </span>
                               </div>
 
@@ -605,16 +712,10 @@ export const MacawMascot: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => handleToggleAppointment(msg.appointment.id)}
-                                className={`w-full py-1 px-2.5 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1.5 transition-all ${
-                                  appointments.find(a => a.id === msg.appointment.id)?.status === 'completed'
-                                    ? 'bg-[#23a55a]/20 text-[#23a55a] hover:bg-[#23a55a]/30'
-                                    : 'bg-[#23a55a] hover:bg-[#1f934f] text-white shadow'
-                                }`}
+                                className="w-full py-1 px-2.5 rounded-lg text-[10px] font-bold bg-[#23a55a] hover:bg-[#1f934f] text-white shadow flex items-center justify-center gap-1.5 transition-all"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                {appointments.find(a => a.id === msg.appointment.id)?.status === 'completed'
-                                  ? 'Reabrir Tarefa'
-                                  : 'Concluir Tarefa'}
+                                Concluir Tarefa
                               </button>
                             </div>
                           )}
@@ -634,14 +735,14 @@ export const MacawMascot: React.FC = () => {
                   {loading && (
                     <div className="flex items-center gap-2 text-xs text-[#38bdf8] bg-[#0284c7]/10 p-2.5 rounded-2xl border border-[#0284c7]/20 w-fit animate-pulse">
                       <Sparkles className="w-4 h-4 text-[#38bdf8] animate-spin" />
-                      <span>Arara 3D analisando... 🦜</span>
+                      <span>Processando com IA... 🦜</span>
                     </div>
                   )}
 
                   <div ref={chatEndRef} />
                 </div>
 
-                {/* Quick Action Pills */}
+                {/* Quick Action Pills (Opção "Resumir Canal" e "Fixadas" removidas conforme requisitos 3 e 5) */}
                 <div className="px-3 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar border-t border-white/[0.06] bg-[#141517]/40 flex-shrink-0">
                   <button
                     onClick={() => handleSendMessage('Criar tarefa: Revisar relatórios da semana')}
@@ -666,32 +767,41 @@ export const MacawMascot: React.FC = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => {
-                      triggerGesture('ARARA_SUMMARY_READY');
-                      generateChatSummary(activeChannel?.id, activeChannel?.name);
-                      setChatMessages(prev => [
-                        ...prev,
-                        {
-                          role: 'assistant',
-                          content: `ARARA_SUMMARY_READY\n\n🦜 Iniciei a síntese do canal #${activeChannel?.name || 'geral'} com Gemini Flash! O resumo executivo aparecerá na tela em instantes! ✨`,
-                          time: 'Agora',
-                          gesture: 'ARARA_SUMMARY_READY'
-                        }
-                      ]);
-                    }}
+                    onClick={() => handleTabChange('skills')}
                     className="text-[10px] whitespace-nowrap bg-white/[0.04] hover:bg-[#0284c7]/20 border border-white/[0.08] hover:border-[#0284c7]/40 px-2.5 py-1 rounded-full text-[#dbdee1] hover:text-white transition-all flex items-center gap-1"
                   >
-                    <Sparkles className="w-3 h-3 text-[#f0b232]" /> Resumir Canal
-                  </button>
-                  <button
-                    onClick={() => handleSendMessage('Quais mensagens estão fixadas aqui?')}
-                    className="text-[10px] whitespace-nowrap bg-white/[0.04] hover:bg-[#0284c7]/20 border border-white/[0.08] hover:border-[#0284c7]/40 px-2.5 py-1 rounded-full text-[#dbdee1] hover:text-white transition-all"
-                  >
-                    📌 Fixadas
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    <span>Habilidades (.skill.md)</span>
                   </button>
                 </div>
 
-                {/* Input Area */}
+                {/* Staged Attachments Preview (Imagens e Documentos anexados pelo botão +) */}
+                {stagedAiAttachments.length > 0 && (
+                  <div className="px-3 pt-2 pb-0 flex flex-wrap gap-1.5 flex-shrink-0 bg-[#141517]">
+                    {stagedAiAttachments.map(att => (
+                      <div
+                        key={att.id}
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.08] border border-white/[0.12] text-[11px] text-white animate-in fade-in"
+                      >
+                        {att.dataUrl ? (
+                          <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                        ) : (
+                          <FileText className="w-3.5 h-3.5 text-sky-400" />
+                        )}
+                        <span className="truncate max-w-[140px] font-medium">{att.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeStagedAiAttachment(att.id)}
+                          className="p-0.5 rounded-full hover:bg-white/20 text-[#949ba4] hover:text-white"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Input Area com Botão de Anexo (+) Conforme Requisito 3 */}
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -701,6 +811,20 @@ export const MacawMascot: React.FC = () => {
                     theme === 'light' ? 'bg-slate-50 border-black/20' : 'bg-[#141517] border-white/[0.08]'
                   }`}
                 >
+                  {/* Botão de Anexar (+) Imagens e Documentos */}
+                  <button
+                    type="button"
+                    onClick={() => aiFileInputRef.current?.click()}
+                    title="Anexar imagens ou documentos para interagir com a IA"
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 flex-shrink-0 ${
+                      theme === 'light'
+                        ? 'bg-slate-200 hover:bg-sky-100 text-slate-800 border border-black/20 hover:border-[#0284c7]'
+                        : 'bg-white/[0.06] hover:bg-[#0284c7]/20 text-[#dbdee1] hover:text-[#38bdf8] border border-white/[0.1] hover:border-[#0284c7]/40'
+                    }`}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+
                   <input
                     type="text"
                     value={inputText}
@@ -710,7 +834,11 @@ export const MacawMascot: React.FC = () => {
                         triggerGesture('ARARA_THINKING');
                       }
                     }}
-                    placeholder="Converse com a Arara Assistente..."
+                    placeholder={
+                      stagedAiAttachments.length > 0
+                        ? `Pergunte sobre os ${stagedAiAttachments.length} anexo(s)...`
+                        : "Converse com o assistente..."
+                    }
                     className={`flex-1 rounded-xl px-3.5 py-2 text-xs focus:outline-none transition-colors ${
                       theme === 'light'
                         ? 'bg-white text-black border-2 border-black placeholder-slate-500 focus:border-[#0284c7]'
@@ -719,8 +847,8 @@ export const MacawMascot: React.FC = () => {
                   />
                   <button
                     type="submit"
-                    disabled={!inputText.trim() || loading}
-                    className="w-8 h-8 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white flex items-center justify-center disabled:opacity-40 transition-all hover:scale-105 active:scale-95 shadow"
+                    disabled={(!inputText.trim() && stagedAiAttachments.length === 0) || loading}
+                    className="w-8 h-8 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white flex items-center justify-center disabled:opacity-40 transition-all hover:scale-105 active:scale-95 shadow flex-shrink-0"
                   >
                     <Send className="w-3.5 h-3.5" />
                   </button>
@@ -728,7 +856,7 @@ export const MacawMascot: React.FC = () => {
               </div>
             )}
 
-            {/* Tab: Guia de Habilidades da Arara */}
+            {/* Tab: Habilidades (Carregamento de .skill.md e Lista Estruturada Conforme Requisito 4) */}
             {activeTab === 'skills' && (
               <div className="flex-1 flex flex-col overflow-hidden">
                 <MacawSkillsGuideModal
@@ -742,7 +870,7 @@ export const MacawMascot: React.FC = () => {
               </div>
             )}
 
-            {/* Tab: Calendar & Tasks */}
+            {/* Tab: Tarefas & Reuniões com Seleção de Pessoas e Direcionamento ao Canal Conforme Requisito 5 */}
             {activeTab === 'calendar' && (
               <div className="flex-1 flex flex-col p-4 overflow-y-auto no-scrollbar space-y-3">
                 <div className="flex items-center justify-between">
@@ -751,7 +879,7 @@ export const MacawMascot: React.FC = () => {
                       <ListTodo className="w-4 h-4 text-[#38bdf8]" />
                       Agenda & Tarefas ({appointments.length})
                     </h4>
-                    <p className="text-[10px] text-[#949ba4]">Gerencie reuniões, prazos e conclusão de tarefas</p>
+                    <p className="text-[10px] text-[#949ba4]">Notificação direta aos canais e envolvidos</p>
                   </div>
                   <button
                     onClick={() => setShowAddAppModal(!showAddAppModal)}
@@ -761,7 +889,7 @@ export const MacawMascot: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Quick Add Form */}
+                {/* Formulário com seleção de pessoas específicas e canal alvo */}
                 {showAddAppModal && (
                   <form onSubmit={handleCreateAppointment} className="p-3 bg-white/[0.04] border border-white/[0.1] rounded-2xl space-y-2.5 animate-in fade-in">
                     <div className="flex gap-2">
@@ -791,7 +919,7 @@ export const MacawMascot: React.FC = () => {
 
                     <input
                       type="text"
-                      placeholder={newAppType === 'task' ? 'Título da tarefa (ex: Finalizar relatório de vendas)' : 'Título da reunião (ex: Review da Sprint)'}
+                      placeholder={newAppType === 'task' ? 'Título da tarefa (ex: Revisar entrega do projeto)' : 'Título da reunião (ex: Daily com a equipe)'}
                       value={newAppTitle}
                       onChange={(e) => setNewAppTitle(e.target.value)}
                       className={`w-full rounded-xl px-3 py-1.5 text-xs focus:outline-none transition-colors ${
@@ -801,6 +929,7 @@ export const MacawMascot: React.FC = () => {
                       }`}
                       autoFocus
                     />
+
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         type="date"
@@ -823,6 +952,82 @@ export const MacawMascot: React.FC = () => {
                         }`}
                       />
                     </div>
+
+                    {/* Seleção do Canal Alvo para o aviso automatizado */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-[#949ba4] flex items-center gap-1">
+                        <Hash className="w-3 h-3 text-[#38bdf8]" />
+                        <span>Canal de Destino para Notificação:</span>
+                      </label>
+                      <select
+                        value={targetChannelId}
+                        onChange={(e) => setTargetChannelId(e.target.value)}
+                        className={`w-full rounded-xl px-2.5 py-1.5 text-xs focus:outline-none transition-colors ${
+                          theme === 'light'
+                            ? 'bg-white text-black border-2 border-black'
+                            : 'bg-[#1e1f22] border border-white/[0.1] text-white focus:border-[#38bdf8]'
+                        }`}
+                      >
+                        {allChannels.map(ch => (
+                          <option key={ch.id} value={ch.id}>
+                            #{ch.name} {ch.isPrivate ? '(Privado)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Seleção de Pessoas Específicas / Membros Envolvidos */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-[#949ba4] flex items-center gap-1">
+                        <Users className="w-3 h-3 text-[#38bdf8]" />
+                        <span>Pessoas Envolvidas:</span>
+                      </label>
+                      <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto no-scrollbar p-1 rounded-xl bg-black/10 border border-white/[0.06]">
+                        {/* Membro Atual */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const name = currentUser.name || 'Você';
+                            setSelectedAttendees(prev =>
+                              prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
+                            );
+                          }}
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-medium transition-all ${
+                            selectedAttendees.includes(currentUser.name || 'Você')
+                              ? 'bg-[#0284c7] text-white'
+                              : 'bg-white/[0.05] text-[#949ba4] hover:text-white'
+                          }`}
+                        >
+                          ✓ {currentUser.name || 'Você'}
+                        </button>
+
+                        {/* Outros Participantes */}
+                        {(participants || [])
+                          .filter(p => p.id !== currentUser.id)
+                          .map(p => {
+                            const isSelected = selectedAttendees.includes(p.name);
+                            return (
+                              <button
+                                key={p.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedAttendees(prev =>
+                                    isSelected ? prev.filter(n => n !== p.name) : [...prev, p.name]
+                                  );
+                                }}
+                                className={`px-2 py-0.5 rounded-lg text-[10px] font-medium transition-all ${
+                                  isSelected
+                                    ? 'bg-[#0284c7] text-white'
+                                    : 'bg-white/[0.05] text-[#949ba4] hover:text-white'
+                                }`}
+                              >
+                                {isSelected ? '✓ ' : '+ '}{p.name}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
+
                     <div className="flex justify-end gap-2 pt-1">
                       <button
                         type="button"
@@ -833,20 +1038,20 @@ export const MacawMascot: React.FC = () => {
                       </button>
                       <button
                         type="submit"
-                        className="text-[10px] px-3 py-1 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold rounded-lg"
+                        className="text-[10px] px-3 py-1 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold rounded-lg shadow"
                       >
-                        Salvar
+                        Salvar e Notificar Canal
                       </button>
                     </div>
                   </form>
                 )}
 
-                {/* List of appointments & tasks */}
+                {/* Lista de compromissos & tarefas */}
                 <div className="space-y-2">
                   {appointments.length === 0 ? (
                     <div className="text-center py-8 text-xs text-[#949ba4]">
                       <ListTodo className="w-8 h-8 mx-auto mb-2 text-[#0284c7]/40" />
-                      Nenhuma tarefa ou compromisso registrado. Peça à Arara para criar uma!
+                      Nenhuma tarefa ou compromisso registrado.
                     </div>
                   ) : (
                     appointments.map((app) => {
@@ -861,7 +1066,6 @@ export const MacawMascot: React.FC = () => {
                           }`}
                         >
                           <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                            {/* Toggle checkbox button */}
                             <button
                               onClick={() => handleToggleAppointment(app.id)}
                               className="mt-0.5 p-0.5 rounded-lg text-[#949ba4] hover:text-[#23a55a] transition-colors flex-shrink-0"
@@ -901,7 +1105,6 @@ export const MacawMascot: React.FC = () => {
                           </div>
 
                           <div className="flex items-center gap-1 flex-shrink-0">
-                            {/* Concluir action button */}
                             <button
                               onClick={() => handleToggleAppointment(app.id)}
                               className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
@@ -930,157 +1133,114 @@ export const MacawMascot: React.FC = () => {
               </div>
             )}
 
-            {/* Tab: Pinned Messages */}
-            {activeTab === 'pinned' && (
-              <div className="flex-1 flex flex-col p-4 overflow-y-auto no-scrollbar space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className={`text-xs font-bold flex items-center gap-1.5 ${theme === 'light' ? 'text-black' : 'text-white'}`}>
-                      <Pin className="w-4 h-4 text-[#f0b232]" />
-                      Mensagens Fixadas em #{activeChannel?.name || 'geral'}
-                    </h4>
-                    <p className={`text-[10px] ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>
-                      Informações e destaques prioritários
-                    </p>
-                  </div>
-                  {channelPins.length > 0 && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500 border border-amber-500/30">
-                      {channelPins.length} fixada{channelPins.length > 1 ? 's' : ''}
-                    </span>
-                  )}
-                </div>
-
-                {channelPins.length === 0 ? (
-                  <div className={`text-center py-8 text-xs ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>
-                    <Pin className="w-8 h-8 mx-auto mb-2 text-[#f0b232]/40" />
-                    Nenhuma mensagem fixada neste canal.
-                  </div>
-                ) : (
-                  channelPins.map((pin) => (
-                    <div
-                      key={pin.id}
-                      className={`p-3 rounded-2xl space-y-2 transition-all group relative border ${
-                        theme === 'light'
-                          ? 'bg-slate-50 hover:bg-slate-100 border-2 border-black text-black shadow-sm'
-                          : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.06] text-[#dbdee1]'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className={`font-bold ${theme === 'light' ? 'text-black font-extrabold' : 'text-white'}`}>
-                          {pin.authorName}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[10px] ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>
-                            {pin.timestamp}
-                          </span>
-                          <button
-                            onClick={() => {
-                              if (activeChannel?.id) {
-                                unpinMessage(activeChannel.id, pin.id);
-                                triggerGesture('ARARA_SUCCESS');
-                              }
-                            }}
-                            title="Desafixar / Excluir mensagem fixada"
-                            className="p-1 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center gap-1"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                      <p className={`text-xs whitespace-pre-wrap leading-relaxed ${theme === 'light' ? 'text-slate-800' : 'text-[#dbdee1]'}`}>
-                        {pin.content}
-                      </p>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-
-            {/* Tab: Admin Access Requests (Solicitações de Novos Usuários) */}
+            {/* Tab: Acessos Individuais por Canal Alvo Conforme Requisito 6 */}
             {isAdmin && activeTab === 'requests' && (
               <div className="flex-1 flex flex-col p-4 overflow-y-auto no-scrollbar space-y-3">
                 <div>
                   <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
                     <ShieldAlert className="w-4 h-4 text-amber-400" />
-                    Solicitações de Novos Usuários ({pendingCount})
+                    Gerenciamento Granular de Acessos ({pendingCount})
                   </h4>
-                  <p className="text-[10px] text-[#949ba4]">Controle de acesso seguro para novos membros</p>
+                  <p className="text-[10px] text-[#949ba4]">Controle individual de permissões por canal alvo</p>
                 </div>
 
                 {pendingUsers.length === 0 ? (
                   <div className="text-center py-8 text-xs text-[#949ba4] space-y-2">
                     <CheckCheck className="w-8 h-8 mx-auto text-[#23a55a]/70" />
-                    <div className="font-bold text-white">Tudo em ordem!</div>
+                    <div className="font-bold text-white">Nenhum pedido pendente</div>
                     <p className="text-[11px] max-w-xs mx-auto">
-                      Não há nenhum novo usuário aguardando liberação. Todos os usuários possuem acesso seguro e isolado.
+                      Todos os participantes estão com permissões ativas e isoladas.
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-2.5">
-                    {pendingUsers.map((user) => (
-                      <div
-                        key={user.id}
-                        className="p-3 bg-white/[0.04] border border-amber-500/20 rounded-2xl space-y-2.5"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          {user.avatar ? (
-                            <img src={user.avatar} alt={user.name} className="w-9 h-9 rounded-full object-cover border border-white/[0.1]" />
-                          ) : (
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center font-bold text-white text-xs">
-                              {user.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <div className="text-xs font-bold text-white truncate">{user.name}</div>
-                            <div className="text-[10px] text-[#949ba4] truncate">{user.email || user.tag}</div>
-                          </div>
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                            Pendente
-                          </span>
-                        </div>
+                  <div className="space-y-3">
+                    {pendingUsers.map((user) => {
+                      const userChs = userSelectedChannels[user.id] || allChannels.map(c => c.id);
 
-                        <div className="flex items-center gap-2 pt-1 border-t border-white/[0.06]">
-                          <button
-                            onClick={() => {
-                              triggerGesture('ARARA_NOD_YES', ['ARARA_NOD_YES', 'ARARA_RETURN_NEUTRAL', 'ARARA_IDLE_LOOP']);
-                              approveParticipant(user.id);
-                              setChatMessages(prev => [
-                                ...prev,
-                                {
-                                  role: 'assistant',
-                                  content: `ARARA_NOD_YES\n\n🦜 Acesso do usuário **${user.name}** (${user.email || user.tag}) liberado com sucesso! ✅`,
-                                  time: 'Agora',
-                                  gesture: 'ARARA_NOD_YES'
-                                }
-                              ]);
-                            }}
-                            className="flex-1 py-1.5 px-2 bg-[#23a55a] hover:bg-[#1f934f] text-white rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 shadow transition-all hover:scale-102"
-                          >
-                            <UserCheck className="w-3.5 h-3.5" />
-                            <span>Aprovar Acesso</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              triggerGesture('ARARA_SHAKE_NO', ['ARARA_SHAKE_NO', 'ARARA_RETURN_NEUTRAL', 'ARARA_IDLE_LOOP']);
-                              revokeParticipant(user.id);
-                              setChatMessages(prev => [
-                                ...prev,
-                                {
-                                  role: 'assistant',
-                                  content: `ARARA_SHAKE_NO\n\n🦜 Solicitação de acesso de **${user.name}** foi recusada.`,
-                                  time: 'Agora',
-                                  gesture: 'ARARA_SHAKE_NO'
-                                }
-                              ]);
-                            }}
-                            className="py-1.5 px-3 bg-white/[0.06] hover:bg-[#f23f43]/20 hover:text-[#f23f43] text-[#949ba4] rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all"
-                          >
-                            <UserX className="w-3.5 h-3.5" />
-                            <span>Recusar</span>
-                          </button>
+                      return (
+                        <div
+                          key={user.id}
+                          className="p-3 bg-white/[0.04] border border-amber-500/20 rounded-2xl space-y-2.5"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            {user.avatar ? (
+                              <img src={user.avatar} alt={user.name} className="w-9 h-9 rounded-full object-cover border border-white/[0.1]" />
+                            ) : (
+                              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center font-bold text-white text-xs">
+                                {user.name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-white truncate">{user.name}</div>
+                              <div className="text-[10px] text-[#949ba4] truncate">{user.email || user.tag}</div>
+                            </div>
+                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              Pendente
+                            </span>
+                          </div>
+
+                          {/* Seleção Individual de Canais para este Usuário */}
+                          <div className="space-y-1.5 pt-1 border-t border-white/[0.06]">
+                            <div className="text-[10px] font-bold text-[#38bdf8] flex items-center gap-1">
+                              <Lock className="w-3 h-3" />
+                              <span>Liberar Acesso nos Canais:</span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto no-scrollbar p-1">
+                              {allChannels.map(ch => {
+                                const isAllowed = userChs.includes(ch.id);
+                                return (
+                                  <button
+                                    key={ch.id}
+                                    type="button"
+                                    onClick={() => toggleUserChannel(user.id, ch.id)}
+                                    className={`p-1.5 rounded-xl border text-left text-[10px] font-medium flex items-center justify-between transition-all ${
+                                      isAllowed
+                                        ? 'bg-[#0284c7]/20 border-[#0284c7]/40 text-white'
+                                        : 'bg-white/[0.02] border-white/[0.06] text-[#949ba4] hover:text-white'
+                                    }`}
+                                  >
+                                    <span className="truncate">#{ch.name}</span>
+                                    <span className={`text-[9px] font-bold ${isAllowed ? 'text-[#38bdf8]' : 'text-slate-500'}`}>
+                                      {isAllowed ? '✓ Sim' : '✗ Não'}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 pt-1 border-t border-white/[0.06]">
+                            <button
+                              onClick={() => handleApproveWithChannels(user.id, user.name)}
+                              className="flex-1 py-1.5 px-2 bg-[#23a55a] hover:bg-[#1f934f] text-white rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 shadow transition-all hover:scale-102"
+                            >
+                              <UserCheck className="w-3.5 h-3.5" />
+                              <span>Aprovar com Canais Selecionados</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                triggerGesture('ARARA_SHAKE_NO', ['ARARA_SHAKE_NO', 'ARARA_RETURN_NEUTRAL', 'ARARA_IDLE_LOOP']);
+                                revokeParticipant(user.id);
+                                setChatMessages(prev => [
+                                  ...prev,
+                                  {
+                                    role: 'assistant',
+                                    content: `ARARA_SHAKE_NO\n\n🦜 Solicitação de **${user.name}** foi recusada.`,
+                                    time: 'Agora',
+                                    gesture: 'ARARA_SHAKE_NO'
+                                  }
+                                ]);
+                              }}
+                              className="py-1.5 px-3 bg-white/[0.06] hover:bg-[#f23f43]/20 hover:text-[#f23f43] text-[#949ba4] rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all"
+                            >
+                              <UserX className="w-3.5 h-3.5" />
+                              <span>Recusar</span>
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1089,21 +1249,21 @@ export const MacawMascot: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Objeto 3D flutuante da Arara (posicionada logo acima da barra de entrada de mensagens do chat) */}
-      <div className="fixed bottom-[80px] right-3 sm:bottom-[82px] sm:right-6 z-40 flex items-end justify-end pointer-events-none select-none">
+      {/* Objeto 3D flutuante do Mascote (Reposicionado mais abaixo, bem próximo e geometricamente alinhado acima da barra de input de chat conforme requisito 1) */}
+      <div className="fixed bottom-[18px] right-3 sm:bottom-[20px] sm:right-6 z-40 flex items-end justify-end pointer-events-none select-none">
         <div className="pointer-events-auto relative flex flex-col items-center justify-end group">
-          {/* Tooltip elegante ao passar o mouse ou quando há notificações */}
+          {/* Tooltip limpo sem a identificação textual "Arara Assistente" conforme requisito 2 */}
           {!macawModalOpen && (
             <div
               onClick={handleMascotClick}
-              className={`absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20 px-3 py-1.5 rounded-xl shadow-2xl text-[11px] font-extrabold whitespace-nowrap flex items-center gap-1.5 transform translate-y-1 group-hover:translate-y-0 ${
+              className={`absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20 px-3 py-1.5 rounded-xl shadow-2xl text-[11px] font-extrabold whitespace-nowrap flex items-center gap-1.5 transform translate-y-1 group-hover:translate-y-0 cursor-pointer ${
                 theme === 'light'
                   ? 'bg-white text-black border-2 border-black shadow-[0_4px_14px_rgba(0,0,0,0.15)]'
                   : 'bg-[#141517]/95 text-white border border-white/[0.12] backdrop-blur-md'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-[#f59e0b] animate-pulse" />
-              <span>Arara Assistente</span>
+              <span>Assistente IA</span>
               {isAdmin && pendingCount > 0 && (
                 <span className={`px-1.5 py-0.2 rounded-full text-[9px] border font-bold ${
                   theme === 'light'
@@ -1116,7 +1276,7 @@ export const MacawMascot: React.FC = () => {
             </div>
           )}
 
-          {/* Objeto 3D flutuante com animação contínua e ininterrupta via Framer Motion */}
+          {/* Objeto 3D flutuante com animação perpétua ininterrupta via Framer Motion (não estática sob hipótese alguma) */}
           <motion.div
             onClick={handleMascotClick}
             variants={mascotFloatVariants}
