@@ -1,0 +1,106 @@
+{
+  "rig": "SmartRigArmature",
+  "bones": 32,
+  "fps": 24,
+  "source": "arara_animada.blend",
+  "model": "arara_3d.glb",
+  "animations": [
+    {
+      "name": "ARARA_IDLE_LOOP",
+      "frames": "1 a 96",
+      "loop": true,
+      "description": "Agente aguardando, sem tarefa em andamento. É o estado padrão."
+    },
+    {
+      "name": "ARARA_WAVE_WING",
+      "frames": "1 a 40",
+      "loop": false,
+      "description": "Saudação ou início de uma conversa."
+    },
+    {
+      "name": "ARARA_OPEN_WINGS",
+      "frames": "1 a 56",
+      "loop": false,
+      "description": "Boas-vindas ou abertura de uma nova seção."
+    },
+    {
+      "name": "ARARA_NOD_YES",
+      "frames": "1 a 32",
+      "loop": false,
+      "description": "O usuário confirmou uma decisão ou pediu para seguir."
+    },
+    {
+      "name": "ARARA_SHAKE_NO",
+      "frames": "1 a 30",
+      "loop": false,
+      "description": "A resposta é negativa ou algo não é possível."
+    },
+    {
+      "name": "ARARA_THINKING",
+      "frames": "1 a 60",
+      "loop": false,
+      "description": "Você está analisando, buscando informação ou montando uma resposta."
+    },
+    {
+      "name": "ARARA_ALERT_REMINDER",
+      "frames": "1 a 20",
+      "loop": false,
+      "description": "Um lembrete rápido ou aviso importante."
+    },
+    {
+      "name": "ARARA_MEETING_REMINDER",
+      "frames": "1 a 24",
+      "loop": false,
+      "description": "Lembrete de reunião que está para começar."
+    },
+    {
+      "name": "ARARA_SUMMARY_READY",
+      "frames": "1 a 56",
+      "loop": false,
+      "description": "Um resumo de reunião ou de conversa está pronto."
+    },
+    {
+      "name": "ARARA_PRESENT_MESSAGE",
+      "frames": "1 a 52",
+      "loop": false,
+      "description": "Você está indicando uma mensagem fixada ou um item importante."
+    },
+    {
+      "name": "ARARA_PRESENT_LEFT",
+      "frames": "1 a 48",
+      "loop": false,
+      "description": "Você está indicando algo à esquerda da tela."
+    },
+    {
+      "name": "ARARA_PRESENT_RIGHT",
+      "frames": "1 a 48",
+      "loop": false,
+      "description": "Você está indicando algo à direita da tela."
+    },
+    {
+      "name": "ARARA_UPLOAD_READY",
+      "frames": "1 a 32",
+      "loop": false,
+      "description": "Um arquivo está pronto para envio."
+    },
+    {
+      "name": "ARARA_SUCCESS",
+      "frames": "1 a 60",
+      "loop": false,
+      "description": "Uma tarefa foi concluída com sucesso."
+    },
+    {
+      "name": "ARARA_RETURN_NEUTRAL",
+      "frames": "1 a 12",
+      "loop": false,
+      "description": "Encerra um gesto e volta à posição neutra antes de outra animação."
+    }
+  ],
+  "sequences": {
+    "start": ["ARARA_WAVE_WING", "ARARA_IDLE_LOOP"],
+    "support_success": ["ARARA_THINKING", "ARARA_NOD_YES", "ARARA_RETURN_NEUTRAL", "ARARA_IDLE_LOOP"],
+    "support_negative": ["ARARA_THINKING", "ARARA_SHAKE_NO", "ARARA_RETURN_NEUTRAL", "ARARA_IDLE_LOOP"],
+    "meeting": ["ARARA_MEETING_REMINDER", "ARARA_SUMMARY_READY", "ARARA_RETURN_NEUTRAL", "ARARA_IDLE_LOOP"],
+    "task_delivered": ["ARARA_UPLOAD_READY", "ARARA_SUCCESS", "ARARA_IDLE_LOOP"]
+  }
+}

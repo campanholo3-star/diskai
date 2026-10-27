@@ -1,0 +1,361 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+:root {
+  --bg-primary: #313338;
+  --bg-secondary: #2b2d31;
+  --bg-tertiary: #1e1f22;
+  --bg-floating: #383a40;
+  --bg-hover: #35373c;
+  --text-normal: #dbdee1;
+  --text-header: #ffffff;
+  --text-muted: #949ba4;
+  --border-subtle: #3e4047;
+}
+
+body {
+  font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  background-color: #313338;
+  color: #dbdee1;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Tactile button micro-interaction for all buttons in Diskai */
+button {
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), filter 0.15s ease, background-color 0.15s ease;
+  cursor: pointer;
+}
+button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+/* 30-second unread bounce animation: 3 distinct jumps */
+@keyframes jump3 {
+  0% { transform: translateY(0) scale(1); }
+  15% { transform: translateY(-18px) scale(1.04); }
+  30% { transform: translateY(0) scale(0.97); }
+  45% { transform: translateY(-13px) scale(1.02); }
+  60% { transform: translateY(0) scale(0.98); }
+  75% { transform: translateY(-7px) scale(1.01); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.animate-jump3 {
+  animation: jump3 1.3s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+::selection {
+  background: #5865F2;
+  color: #ffffff;
+}
+
+/* Polished scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a1b1e;
+  border-radius: 4px;
+}
+
+/* ==============================================================
+   DISCORD AUTHENTIC LIGHT THEME (WHITE / DAY MODE) OVERRIDES
+   ============================================================== */
+html.light-theme body {
+  background-color: #ffffff !important;
+  color: #313338 !important;
+}
+
+html.light-theme ::-webkit-scrollbar-thumb {
+  background: #c7ccd1;
+}
+
+html.light-theme .bg-\[\#313338\] {
+  background-color: #ffffff !important;
+  color: #313338 !important;
+}
+
+html.light-theme .bg-\[\#2b2d31\] {
+  background-color: #f2f3f5 !important;
+  color: #313338 !important;
+}
+
+html.light-theme .bg-\[\#1e1f22\] {
+  background-color: #e3e5e8 !important;
+  color: #313338 !important;
+}
+
+html.light-theme .bg-\[\#232428\] {
+  background-color: #ebedef !important;
+  color: #313338 !important;
+}
+
+html.light-theme .bg-\[\#111214\] {
+  background-color: #ffffff !important;
+  color: #060607 !important;
+}
+
+html.light-theme .bg-\[\#383a40\],
+html.light-theme .bg-\[\#383a40\]\/80 {
+  background-color: #ffffff !important;
+  color: #060607 !important;
+  border-color: #000000 !important;
+}
+
+html.light-theme .chat-input-bar {
+  background-color: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light-theme .chat-input-bar input {
+  color: #000000 !important;
+}
+
+html.light-theme .chat-input-bar input::placeholder {
+  color: #64748b !important;
+}
+
+html.light-theme .bg-\[\#404249\] {
+  background-color: #d7d9dc !important;
+  color: #060607 !important;
+}
+
+html.light-theme .text-white {
+  color: #060607 !important;
+}
+
+html.light-theme .text-\[\#dbdee1\] {
+  color: #313338 !important;
+}
+
+html.light-theme .text-\[\#b5bac1\],
+html.light-theme .text-\[\#949ba4\] {
+  color: #5c626b !important;
+}
+
+html.light-theme .border-\[\#1f2023\],
+html.light-theme .border-\[\#1f2023\]\/40,
+html.light-theme .border-\[\#1f2023\]\/50,
+html.light-theme .border-\[\#1f2023\]\/60,
+html.light-theme .border-\[\#3e4047\],
+html.light-theme .border-\[\#35373c\],
+html.light-theme .border-\[\#35373c\]\/40,
+html.light-theme .border-\[\#35373c\]\/50,
+html.light-theme .border-\[\#35373c\]\/60,
+html.light-theme .border-\[\#383a40\],
+html.light-theme .border-\[\#383a40\]\/60 {
+  border-color: #e3e5e8 !important;
+}
+
+html.light-theme .hover\:bg-\[\#35373c\]:hover,
+html.light-theme .hover\:bg-\[\#35373c\]\/50:hover,
+html.light-theme .hover\:bg-\[\#35373c\]\/60:hover {
+  background-color: #e0e2e5 !important;
+}
+
+html.light-theme .hover\:bg-\[\#2e3035\]:hover {
+  background-color: #f7f8fa !important;
+}
+
+html.light-theme input::placeholder,
+html.light-theme textarea::placeholder {
+  color: #747f8d !important;
+}
+
+/* Retain branded highlights */
+html.light-theme .bg-\[\#5865F2\],
+html.light-theme .text-\[\#5865F2\],
+html.light-theme .bg-\[\#23a55a\],
+html.light-theme .text-\[\#23a55a\],
+html.light-theme .bg-\[\#f23f43\],
+html.light-theme .text-\[\#f23f43\] {
+  /* Keep brand vibrancy */
+}
+
+html.light-theme .bg-\[\#5865F2\] {
+  color: #ffffff !important;
+}
+html.light-theme .bg-\[\#23a55a\] {
+  color: #ffffff !important;
+}
+html.light-theme .bg-\[\#f23f43\] {
+  color: #ffffff !important;
+}
+
+/* ==============================================================
+   DISCORD THEMES (EMERALD / CRIMSON / SAKURA)
+   ============================================================== */
+
+/* --- 1. TEMA VERDE / FLORESTA ESMERALDA --- */
+html.theme-emerald body {
+  background-color: #0d1b15 !important;
+  color: #d1fae5 !important;
+}
+html.theme-emerald ::-webkit-scrollbar-thumb {
+  background: #142920;
+}
+html.theme-emerald .bg-\[\#313338\] {
+  background-color: #0d1b15 !important;
+}
+html.theme-emerald .bg-\[\#2b2d31\] {
+  background-color: #142920 !important;
+}
+html.theme-emerald .bg-\[\#1e1f22\] {
+  background-color: #08120e !important;
+}
+html.theme-emerald .bg-\[\#232428\] {
+  background-color: #11211a !important;
+}
+html.theme-emerald .bg-\[\#383a40\],
+html.theme-emerald .bg-\[\#35373c\] {
+  background-color: #1b362b !important;
+}
+html.theme-emerald .bg-\[\#404249\] {
+  background-color: #224436 !important;
+}
+html.theme-emerald .border-\[\#1f2023\],
+html.theme-emerald .border-\[\#1f2023\]\/40,
+html.theme-emerald .border-\[\#3e4047\],
+html.theme-emerald .border-\[\#35373c\],
+html.theme-emerald .border-\[\#383a40\] {
+  border-color: #1a382a !important;
+}
+html.theme-emerald .hover\:bg-\[\#35373c\]:hover,
+html.theme-emerald .hover\:bg-\[\#35373c\]\/50:hover,
+html.theme-emerald .hover\:bg-\[\#35373c\]\/60:hover {
+  background-color: #224436 !important;
+}
+html.theme-emerald .hover\:bg-\[\#2e3035\]:hover {
+  background-color: #1b362b !important;
+}
+html.theme-emerald .text-\[\#5865F2\] {
+  color: #23a55a !important;
+}
+html.theme-emerald .bg-\[\#5865F2\] {
+  background-color: #23a55a !important;
+}
+html.theme-emerald .border-\[\#5865F2\] {
+  border-color: #23a55a !important;
+}
+
+/* --- 2. TEMA VERMELHO / VINHO CARMIM --- */
+html.theme-crimson body {
+  background-color: #1a0c0e !important;
+  color: #ffe4e6 !important;
+}
+html.theme-crimson ::-webkit-scrollbar-thumb {
+  background: #261215;
+}
+html.theme-crimson .bg-\[\#313338\] {
+  background-color: #1a0c0e !important;
+}
+html.theme-crimson .bg-\[\#2b2d31\] {
+  background-color: #261215 !important;
+}
+html.theme-crimson .bg-\[\#1e1f22\] {
+  background-color: #120709 !important;
+}
+html.theme-crimson .bg-\[\#232428\] {
+  background-color: #210e11 !important;
+}
+html.theme-crimson .bg-\[\#383a40\],
+html.theme-crimson .bg-\[\#35373c\] {
+  background-color: #33181c !important;
+}
+html.theme-crimson .bg-\[\#404249\] {
+  background-color: #3f1e23 !important;
+}
+html.theme-crimson .border-\[\#1f2023\],
+html.theme-crimson .border-\[\#1f2023\]\/40,
+html.theme-crimson .border-\[\#3e4047\],
+html.theme-crimson .border-\[\#35373c\],
+html.theme-crimson .border-\[\#383a40\] {
+  border-color: #3a1b20 !important;
+}
+html.theme-crimson .hover\:bg-\[\#35373c\]:hover,
+html.theme-crimson .hover\:bg-\[\#35373c\]\/50:hover,
+html.theme-crimson .hover\:bg-\[\#35373c\]\/60:hover {
+  background-color: #3f1e23 !important;
+}
+html.theme-crimson .hover\:bg-\[\#2e3035\]:hover {
+  background-color: #33181c !important;
+}
+html.theme-crimson .text-\[\#5865F2\] {
+  color: #f23f43 !important;
+}
+html.theme-crimson .bg-\[\#5865F2\] {
+  background-color: #f23f43 !important;
+}
+html.theme-crimson .border-\[\#5865F2\] {
+  border-color: #f23f43 !important;
+}
+
+/* --- 3. TEMA ROSA / SAKURA NEON --- */
+html.theme-sakura body {
+  background-color: #180b18 !important;
+  color: #fce7f3 !important;
+}
+html.theme-sakura ::-webkit-scrollbar-thumb {
+  background: #261226;
+}
+html.theme-sakura .bg-\[\#313338\] {
+  background-color: #180b18 !important;
+}
+html.theme-sakura .bg-\[\#2b2d31\] {
+  background-color: #261226 !important;
+}
+html.theme-sakura .bg-\[\#1e1f22\] {
+  background-color: #100610 !important;
+}
+html.theme-sakura .bg-\[\#232428\] {
+  background-color: #200e20 !important;
+}
+html.theme-sakura .bg-\[\#383a40\],
+html.theme-sakura .bg-\[\#35373c\] {
+  background-color: #361836 !important;
+}
+html.theme-sakura .bg-\[\#404249\] {
+  background-color: #441e44 !important;
+}
+html.theme-sakura .border-\[\#1f2023\],
+html.theme-sakura .border-\[\#1f2023\]\/40,
+html.theme-sakura .border-\[\#3e4047\],
+html.theme-sakura .border-\[\#35373c\],
+html.theme-sakura .border-\[\#383a40\] {
+  border-color: #3f1a3f !important;
+}
+html.theme-sakura .hover\:bg-\[\#35373c\]:hover,
+html.theme-sakura .hover\:bg-\[\#35373c\]\/50:hover,
+html.theme-sakura .hover\:bg-\[\#35373c\]\/60:hover {
+  background-color: #441e44 !important;
+}
+html.theme-sakura .hover\:bg-\[\#2e3035\]:hover {
+  background-color: #361836 !important;
+}
+html.theme-sakura .text-\[\#5865F2\] {
+  color: #eb459e !important;
+}
+html.theme-sakura .bg-\[\#5865F2\] {
+  background-color: #eb459e !important;
+}
+html.theme-sakura .border-\[\#5865F2\] {
+  border-color: #eb459e !important;
+}
