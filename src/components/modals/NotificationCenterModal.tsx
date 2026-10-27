@@ -1,5 +1,5 @@
-import React from 'react';
-import { Bell, Check, Trash2, X, Sparkles, UserPlus, MessageSquare } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, Check, Trash2, X, Sparkles, UserPlus, MessageSquare, MoreVertical, Clock, BellOff } from 'lucide-react';
 import { useDiskai } from '../../context/DiskaiContext';
 
 interface NotificationCenterProps {
@@ -20,6 +20,23 @@ export const NotificationCenterModal: React.FC<NotificationCenterProps> = ({ onC
   } = useDiskai();
 
   const [actionFeedback, setActionFeedback] = React.useState<Record<string, { status: 'accepted' | 'rejected'; text: string }>>({});
+  const [showMuteMenu, setShowMuteMenu] = useState(false);
+
+  const handleMute = (durationMs: number) => {
+    const expireTime = Date.now() + durationMs;
+    try {
+      localStorage.setItem('diskai_notifications_muted_until', String(expireTime));
+    } catch {}
+    setShowMuteMenu(false);
+  };
+
+  const handleMutePermanently = () => {
+    try {
+      localStorage.setItem('diskai_notifications_muted_until', String(Date.now() + 365 * 24 * 3600 * 1000));
+      localStorage.setItem('diskai_unread_popup_enabled', 'false');
+    } catch {}
+    setShowMuteMenu(false);
+  };
 
   const handleAcceptFriend = (notif: any) => {
     const friendMatch = friends.find(f =>
@@ -105,6 +122,73 @@ export const NotificationCenterModal: React.FC<NotificationCenterProps> = ({ onC
               <span className="hidden sm:inline">Limpar</span>
             </button>
           )}
+          {/* Menu de 3 Pontos (...) de Silenciamento ao lado do botão Fechar (X) */}
+          <div className="relative">
+            <button
+              onClick={() => setShowMuteMenu(prev => !prev)}
+              title="Opções de silenciamento"
+              className={`p-1.5 rounded-lg transition-colors ${
+                showMuteMenu
+                  ? 'bg-[#5865F2] text-white'
+                  : theme === 'light'
+                    ? 'hover:bg-slate-200 text-slate-700'
+                    : 'hover:text-white text-[#949ba4] hover:bg-[#35373c]'
+              }`}
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+
+            {showMuteMenu && (
+              <div className={`absolute top-full right-0 mt-1.5 w-56 rounded-xl shadow-2xl p-1.5 z-50 text-xs border animate-in fade-in zoom-in-95 duration-100 ${
+                theme === 'light'
+                  ? 'bg-white border-2 border-black text-black'
+                  : 'bg-[#1e1f22] border-[#3e4047] text-white'
+              }`}>
+                <div className="px-2.5 py-1.5 text-[10px] font-bold text-[#949ba4] uppercase tracking-wider border-b border-white/5 flex items-center justify-between">
+                  <span>Silenciar Alertas</span>
+                  <BellOff className="w-3 h-3 text-[#f23f43]" />
+                </div>
+                <div className="py-1 space-y-0.5">
+                  <button
+                    onClick={() => handleMute(30 * 60 * 1000)}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition-colors ${
+                      theme === 'light' ? 'hover:bg-slate-100 text-slate-800' : 'hover:bg-[#35373c] text-white'
+                    }`}
+                  >
+                    <span>Silenciar por 30 minutos</span>
+                    <Clock className="w-3 h-3 text-[#949ba4]" />
+                  </button>
+                  <button
+                    onClick={() => handleMute(60 * 60 * 1000)}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition-colors ${
+                      theme === 'light' ? 'hover:bg-slate-100 text-slate-800' : 'hover:bg-[#35373c] text-white'
+                    }`}
+                  >
+                    <span>Silenciar por 1 hora</span>
+                    <Clock className="w-3 h-3 text-[#949ba4]" />
+                  </button>
+                  <button
+                    onClick={() => handleMute(24 * 60 * 60 * 1000)}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition-colors ${
+                      theme === 'light' ? 'hover:bg-slate-100 text-slate-800' : 'hover:bg-[#35373c] text-white'
+                    }`}
+                  >
+                    <span>Silenciar por 24 horas</span>
+                    <Clock className="w-3 h-3 text-[#949ba4]" />
+                  </button>
+                  <div className="border-t border-white/10 my-1" />
+                  <button
+                    onClick={handleMutePermanently}
+                    className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-rose-500/20 text-rose-400 flex items-center justify-between transition-colors font-semibold"
+                  >
+                    <span>Desativar permanentemente</span>
+                    <BellOff className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <button
             onClick={onClose}
             className={`p-1.5 rounded-lg transition-colors ${

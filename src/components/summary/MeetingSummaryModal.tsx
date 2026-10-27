@@ -345,7 +345,7 @@ export const MeetingSummaryModal: React.FC = () => {
               }`}
             >
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Passo 4: Tarefas & Ações ({currentSummary.actionItems.length})</span>
+              <span>Passo 4: Tarefas & Ações</span>
             </button>
           </div>
         </div>
@@ -634,6 +634,16 @@ export const MeetingSummaryModal: React.FC = () => {
           {/* ========================================================================= */}
           {activeStep === 'step4_tasks' && (
             <div className="space-y-4">
+              {/* Título e Descrição Perfeitamente Centralizados e Limpos */}
+              <div className="text-center py-2 space-y-1">
+                <h3 className="text-sm font-bold text-white tracking-wide">
+                  Tarefas e Ações da Reunião
+                </h3>
+                <p className="text-xs text-[#949ba4] max-w-md mx-auto">
+                  Gerenciamento organizado de tarefas manuais e automatizadas identificadas com auxílio da IA.
+                </p>
+              </div>
+
               {/* Formulário para Adicionar Tarefa Manualmente */}
               <form
                 onSubmit={handleCreateManualTask}

@@ -203,22 +203,14 @@ export const MacawMascot: React.FC = () => {
     prevCompletedCountRef.current = currentCompleted;
   }, [appointments]);
 
-  // Reagir a cliques no mascote 3D
+  // Reagir a cliques no mascote 3D - Comportamento de Toggle (Abre no 1º clique, Fecha no 2º clique)
   const handleMascotClick = () => {
-    if (!macawModalOpen) {
-      setMacawModalOpen(true);
+    const nextState = !macawModalOpen;
+    setMacawModalOpen(nextState);
+    if (nextState) {
       triggerGesture('ARARA_WAVE_WING');
     } else {
-      const gestures: AraraGesture[] = [
-        'ARARA_WAVE_WING',
-        'ARARA_OPEN_WINGS',
-        'ARARA_NOD_YES',
-        'ARARA_SUCCESS',
-        'ARARA_PRESENT_RIGHT',
-        'ARARA_ALERT_REMINDER'
-      ];
-      const chosen = gestures[Math.floor(Math.random() * gestures.length)];
-      triggerGesture(chosen);
+      triggerGesture('ARARA_IDLE_LOOP');
     }
   };
 
