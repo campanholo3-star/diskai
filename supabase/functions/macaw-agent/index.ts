@@ -164,7 +164,7 @@ SEUS SUPERPODERES NO DISKAI (FUNCTION CALLING):
 3. RESUMOS COM IA:
    - Se pedir resumo do canal, use a tag: <!--ACTION:SUMMARIZE_CHAT:{"channel_id":"${channel_id}"}-->
 
-Responda em português brasileiro com simpatia, fofura e objetividade produtiva.`;`;
+Responda em português brasileiro com simpatia, fofura e objetividade produtiva.`;
 
     const contents: any[] = [];
     // Adicionar histórico recente se houver

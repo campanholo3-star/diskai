@@ -293,28 +293,28 @@ export const ChatArea: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#313338] select-text relative">
+    <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#17191D] select-text relative">
       {/* Top Channel Header */}
       <div className={`h-12 border-b px-4 flex items-center justify-between select-none shadow-sm flex-shrink-0 z-20 ${
         theme === 'light'
           ? 'bg-white border-black/20 text-black'
-          : 'bg-[#313338] border-[#3e4047] text-white'
+          : 'bg-[#1A1D23] border-[#22262E] text-white'
       }`}>
         <div className="flex items-center gap-2 truncate">
-          <Hash className="w-6 h-6 text-[#80848e] flex-shrink-0" />
-          <span className={`font-black text-base tracking-wide truncate ${
-            theme === 'light' ? 'text-black' : 'text-white drop-shadow-sm'
+          <Hash className="w-5 h-5 text-[#94A3B8] flex-shrink-0" />
+          <span className={`font-bold text-sm tracking-tight truncate ${
+            theme === 'light' ? 'text-black' : 'text-white'
           }`}>
             #{activeChannel.name}
           </span>
         </div>
 
         {/* Action Header Icons (Theme, Notifications, Pin, Group, Members) */}
-        <div className="flex items-center gap-1.5 text-[#b5bac1]">
+        <div className="flex items-center gap-1.5 text-[#94A3B8]">
           {/* Quick Call & Record CTA */}
           <button
             onClick={handleStartCallAndRecord}
-            className="hidden md:flex items-center gap-2 bg-gradient-to-r from-[#5865F2]/15 via-[#7289da]/10 to-[#5865F2]/20 hover:from-[#5865F2] hover:to-[#4752c4] text-[#5865F2] hover:text-white border border-[#5865F2]/30 hover:border-[#5865F2]/80 text-xs font-bold px-3 py-1.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-[#5865F2]/20 backdrop-blur-md hover:scale-105 active:scale-95 group"
+            className="hidden md:flex items-center gap-2 bg-[#16B99A]/10 hover:bg-[#16B99A] text-[#16B99A] hover:text-[#131519] border border-[#16B99A]/30 hover:border-[#16B99A] text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 shadow-sm active:scale-95 group"
           >
             <Radio className="w-3.5 h-3.5 group-hover:animate-pulse" />
             <span>{isInCall && isRecording ? 'Gravando Call' : 'Gravar Reunião'}</span>
@@ -325,9 +325,9 @@ export const ChatArea: React.FC = () => {
             onClick={() => generateChatSummary(activeChannel.id, activeChannel.name)}
             disabled={isGeneratingChatSummary}
             title="Resumir mensagens do canal com IA (Gemini Flash)"
-            className="flex items-center gap-2 bg-gradient-to-r from-sky-500/15 via-indigo-500/15 to-purple-500/15 hover:from-sky-500 hover:to-indigo-600 text-sky-400 hover:text-white border border-sky-500/30 hover:border-sky-400/80 text-xs font-bold px-3 py-1.5 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-sky-500/25 backdrop-blur-md active:scale-95 hover:scale-105 disabled:opacity-50 group"
+            className="flex items-center gap-2 bg-[#0EA5E9]/10 hover:bg-[#0EA5E9] text-[#0EA5E9] hover:text-white border border-[#0EA5E9]/30 hover:border-[#0EA5E9] text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 shadow-sm active:scale-95 disabled:opacity-50 group"
           >
-            <Sparkles className={`w-3.5 h-3.5 text-sky-400 group-hover:text-white transition-colors ${isGeneratingChatSummary ? 'animate-spin' : 'group-hover:rotate-12'}`} />
+            <Sparkles className={`w-3.5 h-3.5 text-[#0EA5E9] group-hover:text-white transition-colors ${isGeneratingChatSummary ? 'animate-spin' : 'group-hover:rotate-12'}`} />
             <span className="hidden sm:inline">
               {isGeneratingChatSummary ? 'Resumindo...' : 'Resumir com IA'}
             </span>
@@ -337,10 +337,10 @@ export const ChatArea: React.FC = () => {
           <button
             onClick={toggleTheme}
             title={theme === 'dark' ? 'Mudar para Tema Claro (White)' : 'Mudar para Tema Escuro (Night)'}
-            className={`p-2 rounded-xl border backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 relative ${
+            className={`p-2 rounded-lg border transition-all duration-200 hover:scale-105 active:scale-95 relative ${
               theme === 'dark'
-                ? 'bg-amber-500/10 hover:bg-amber-500/25 border-amber-500/25 hover:border-amber-400/60 shadow-sm shadow-amber-500/10'
-                : 'bg-indigo-500/10 hover:bg-indigo-500/25 border-indigo-500/25 hover:border-indigo-400/60 shadow-sm shadow-indigo-500/10'
+                ? 'bg-amber-500/10 hover:bg-amber-500/25 border-amber-500/25 text-amber-400'
+                : 'bg-indigo-500/10 hover:bg-indigo-500/25 border-indigo-500/25 text-indigo-400'
             }`}
           >
             {theme === 'dark' ? (
@@ -732,28 +732,38 @@ export const ChatArea: React.FC = () => {
                 )}
               </div>
 
-              {/* Discord-style Hover Action Bar with Luxury Glassmorphism */}
-              <div className="opacity-0 group-hover:opacity-100 flex items-center bg-[#1e1f22]/90 backdrop-blur-xl border border-white/[0.12] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] px-1.5 py-1 transition-all duration-150 absolute right-4 -top-4 z-10 space-x-1">
+              {/* Discord-style Hover Action Bar with High Contrast Glassmorphism */}
+              <div className={`opacity-0 group-hover:opacity-100 flex items-center ${
+                theme === 'light'
+                  ? 'bg-white border-slate-200 shadow-md text-slate-800'
+                  : 'bg-[#2b2d31] border border-[#3e4047] shadow-[0_8px_30px_rgba(0,0,0,0.5)] text-white'
+              } rounded-xl px-1.5 py-1 transition-all duration-150 absolute right-4 -top-4 z-10 space-x-1 border`}>
                 {/* Quick reaction emojis */}
                 {quickEmojis.map(emoji => (
                   <button
                     key={emoji}
                     type="button"
                     onClick={() => toggleReaction(msg.id, emoji)}
-                    className="p-1 hover:bg-white/[0.1] hover:scale-125 active:scale-95 transition-all text-xs rounded-lg leading-none"
+                    className={`p-1 ${
+                      theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-white/[0.12]'
+                    } hover:scale-125 active:scale-95 transition-all text-xs rounded-lg leading-none`}
                     title={`Reagir com ${emoji}`}
                   >
                     {emoji}
                   </button>
                 ))}
 
-                <div className="w-[1px] h-4 bg-white/[0.12] mx-0.5" />
+                <div className={`w-[1px] h-4 ${theme === 'light' ? 'bg-slate-200' : 'bg-white/20'} mx-0.5`} />
 
                 {/* Emoji popover trigger for ANY emoji */}
                 <button
                   type="button"
                   onClick={() => setReactingMessageId(reactingMessageId === msg.id ? null : msg.id)}
-                  className="p-1.5 text-[#b5bac1] hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all hover:scale-110 active:scale-95 border border-transparent hover:border-emerald-500/20 hover:shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                  className={`p-1.5 ${
+                    theme === 'light'
+                      ? 'text-slate-600 hover:text-emerald-600 hover:bg-emerald-50'
+                      : 'text-[#dbdee1] hover:text-emerald-400 hover:bg-emerald-500/20'
+                  } rounded-lg transition-all hover:scale-110 active:scale-95 border border-transparent`}
                   title="Adicionar Reação com Emoji"
                 >
                   <SmilePlus className="w-3.5 h-3.5" />
@@ -764,7 +774,11 @@ export const ChatArea: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleStartEdit(msg.id, msg.content)}
-                    className="p-1.5 text-[#b5bac1] hover:text-sky-400 hover:bg-sky-500/10 rounded-lg transition-all hover:scale-110 active:scale-95 border border-transparent hover:border-sky-500/20 hover:shadow-[0_0_10px_rgba(56,189,248,0.2)]"
+                    className={`p-1.5 ${
+                      theme === 'light'
+                        ? 'text-slate-600 hover:text-sky-600 hover:bg-sky-50'
+                        : 'text-[#dbdee1] hover:text-sky-400 hover:bg-sky-500/20'
+                    } rounded-lg transition-all hover:scale-110 active:scale-95 border border-transparent`}
                     title="Editar Mensagem"
                   >
                     <Pencil className="w-3.5 h-3.5" />
@@ -776,7 +790,11 @@ export const ChatArea: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setDeleteCandidate({ id: msg.id, content: msg.content })}
-                    className="p-1.5 text-[#b5bac1] hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all hover:scale-110 active:scale-95 border border-transparent hover:border-rose-500/20 hover:shadow-[0_0_10px_rgba(244,63,94,0.2)]"
+                    className={`p-1.5 ${
+                      theme === 'light'
+                        ? 'text-slate-600 hover:text-rose-600 hover:bg-rose-50'
+                        : 'text-[#dbdee1] hover:text-rose-400 hover:bg-rose-500/20'
+                    } rounded-lg transition-all hover:scale-110 active:scale-95 border border-transparent`}
                     title="Excluir Mensagem"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -789,12 +807,14 @@ export const ChatArea: React.FC = () => {
                   onClick={() => togglePinMessage(msg.id, activeChannel.id)}
                   className={`p-1.5 rounded-lg border transition-all hover:scale-110 active:scale-95 ${
                     msg.pinned
-                      ? 'text-amber-400 bg-amber-500/20 border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
-                      : 'text-[#b5bac1] hover:text-amber-300 hover:bg-amber-500/10 border-transparent hover:border-amber-500/20'
+                      ? 'text-amber-500 bg-amber-500/20 border-amber-500/40 shadow-xs'
+                      : theme === 'light'
+                      ? 'text-slate-600 hover:text-amber-600 hover:bg-amber-50 border-transparent'
+                      : 'text-[#dbdee1] hover:text-amber-300 hover:bg-amber-500/20 border-transparent'
                   }`}
                   title={msg.pinned ? 'Desfixar Mensagem' : 'Fixar Mensagem'}
                 >
-                  <Pin className={`w-3.5 h-3.5 ${msg.pinned ? 'fill-amber-400' : ''}`} />
+                  <Pin className={`w-3.5 h-3.5 ${msg.pinned ? 'fill-amber-500' : ''}`} />
                 </button>
               </div>
 
@@ -868,23 +888,23 @@ export const ChatArea: React.FC = () => {
           </div>
         )}
 
-        {/* Message Input Bar (Claro no modo claro, com contorno preto) */}
-        <div className={`chat-input-bar rounded-2xl px-4 py-2.5 flex items-center gap-3 transition-all relative z-50 ${
+        {/* Message Input Bar */}
+        <div className={`chat-input-bar rounded-xl px-4 py-2.5 flex items-center gap-3 transition-all relative z-50 ${
           theme === 'light'
             ? 'bg-white border-2 border-black shadow-[0_2px_12px_rgba(0,0,0,0.08)]'
-            : 'bg-[#383a40]/90 backdrop-blur-xl shadow-inner border border-white/[0.08] focus-within:border-indigo-500/50 focus-within:shadow-[0_0_20px_rgba(99,102,241,0.15)]'
+            : 'bg-[#20242A] border border-[#2C313C] focus-within:border-[#16B99A]/60 shadow-lg'
         }`}>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             title="Adicionar anexo do computador (Fotos, PDFs, Docs, Vídeos)"
-            className={`p-1 rounded-xl transition-all hover:scale-110 active:scale-95 cursor-pointer relative z-50 ${
+            className={`p-1 rounded-lg transition-all hover:scale-110 active:scale-95 cursor-pointer relative z-50 ${
               theme === 'light'
                 ? 'text-indigo-600 bg-slate-100 hover:bg-indigo-50 border border-black/30 hover:border-black'
-                : 'text-[#b5bac1] hover:text-indigo-400 bg-white/[0.03] hover:bg-indigo-500/10 border border-white/[0.06] hover:border-indigo-500/30 hover:shadow-[0_0_12px_rgba(99,102,241,0.2)]'
+                : 'text-[#94A3B8] hover:text-[#16B99A] bg-white/[0.03] hover:bg-[#16B99A]/10 border border-[#2C313C] hover:border-[#16B99A]/30'
             }`}
           >
-            <PlusCircle className="w-5 h-5 text-indigo-500" />
+            <PlusCircle className="w-5 h-5 text-[#16B99A]" />
           </button>
 
           <input
@@ -901,7 +921,7 @@ export const ChatArea: React.FC = () => {
             className={`bg-transparent text-sm focus:outline-none flex-1 leading-normal font-medium ${
               theme === 'light'
                 ? 'text-black placeholder-[#64748b]'
-                : 'text-white placeholder-[#80848e]'
+                : 'text-white placeholder-[#64748B]'
             }`}
           />
 
@@ -916,12 +936,12 @@ export const ChatArea: React.FC = () => {
               }}
               title="Abrir Seletor de Emojis Completo"
               aria-label="Abrir Seletor de Emojis"
-              className={`p-1.5 rounded-xl border transition-all hover:scale-105 active:scale-95 cursor-pointer relative z-50 ${
+              className={`p-1.5 rounded-lg border transition-all hover:scale-105 active:scale-95 cursor-pointer relative z-50 ${
                 showEmojiPicker
-                  ? 'text-amber-500 bg-amber-500/20 border-amber-500/50 shadow-[0_0_12px_rgba(245,158,11,0.3)]'
+                  ? 'text-amber-500 bg-amber-500/20 border-amber-500/50'
                   : theme === 'light'
                   ? 'text-slate-800 bg-slate-100 border-black/30 hover:border-black hover:text-amber-600'
-                  : 'text-[#b5bac1] bg-white/[0.04] hover:bg-amber-500/10 border-white/[0.08] hover:border-amber-500/40 hover:text-amber-300'
+                  : 'text-[#94A3B8] bg-white/[0.04] hover:bg-amber-500/10 border-[#2C313C] hover:border-amber-500/40 hover:text-amber-300'
               }`}
             >
               <Smile className="w-5 h-5" />
@@ -941,12 +961,12 @@ export const ChatArea: React.FC = () => {
               }}
               title="Enviar Mensagem e Anexos"
               aria-label="Enviar Mensagem"
-              className={`p-2 rounded-xl border transition-all relative z-50 cursor-pointer ${
+              className={`p-2 rounded-lg border transition-all relative z-50 cursor-pointer ${
                 inputText.trim() || stagedAttachments.length > 0
-                  ? 'bg-gradient-to-r from-indigo-500 to-[#5865F2] text-white border-indigo-400/40 shadow-[0_0_15px_rgba(88,101,242,0.4)] hover:shadow-[0_0_22px_rgba(88,101,242,0.6)] hover:scale-105 active:scale-95'
+                  ? 'bg-[#16B99A] text-[#131519] border-[#16B99A]/50 hover:bg-[#139E83] shadow-md shadow-[#16B99A]/20 hover:scale-105 active:scale-95 font-bold'
                   : theme === 'light'
                   ? 'text-slate-500 hover:text-slate-800 bg-slate-100 border-black/20 hover:border-black/50'
-                  : 'text-[#80848e] hover:text-white bg-white/[0.04] border-white/[0.08] hover:border-white/20'
+                  : 'text-[#64748B] hover:text-[#94A3B8] bg-white/[0.04] border-[#2C313C]'
               }`}
             >
               <Send className="w-4 h-4" />

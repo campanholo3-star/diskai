@@ -56,57 +56,57 @@ export const MemberList: React.FC = () => {
           const rect = e.currentTarget.getBoundingClientRect();
           setSelectedUserForProfile({ user, rect });
         }}
-        className={`flex items-center gap-3 px-2 py-1.5 rounded-md cursor-pointer group transition-colors ${
+        className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer group transition-colors ${
           theme === 'light'
             ? isSelected
               ? 'bg-slate-200 border border-black shadow-sm'
               : 'hover:bg-slate-200/80'
             : isSelected
-            ? 'bg-[#35373c]'
-            : 'hover:bg-[#35373c]/60'
+            ? 'bg-[#22262E] text-white border-l-2 border-[#16B99A] pl-1.5'
+            : 'hover:bg-[#20242A]'
         }`}
       >
         <div className="relative flex-shrink-0">
           <img
             src={user.avatar}
             alt={user.name}
-            className={`w-8 h-8 rounded-full object-cover ${theme === 'light' ? 'border border-black/20' : ''}`}
+            className={`w-8 h-8 rounded-lg object-cover ${theme === 'light' ? 'border border-black/20' : 'ring-1 ring-white/10'}`}
           />
           <div
-            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ${
-              theme === 'light' ? 'ring-white' : 'ring-[#2b2d31]'
+            className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ${
+              theme === 'light' ? 'ring-white' : 'ring-[#1A1D23]'
             } ${
               user.status === 'online'
-                ? 'bg-[#23a55a]'
+                ? 'bg-[#10B981]'
                 : user.status === 'idle'
-                ? 'bg-[#f0b232]'
+                ? 'bg-[#F59E0B]'
                 : user.status === 'dnd'
-                ? 'bg-[#f23f43]'
-                : 'bg-[#80848e]'
+                ? 'bg-[#EF4444]'
+                : 'bg-[#64748B]'
             }`}
           />
         </div>
         <div className="truncate flex-1 min-w-0">
           <div className="flex items-center gap-1.5 leading-tight">
             <span
-              className={`text-sm font-semibold truncate ${
+              className={`text-xs font-semibold truncate ${
                 user.role === 'Administrador'
-                  ? theme === 'light' ? 'text-amber-800 font-bold' : 'text-[#f0b232]'
+                  ? theme === 'light' ? 'text-amber-800 font-bold' : 'text-[#F59E0B]'
                   : user.isBot
-                  ? theme === 'light' ? 'text-indigo-700 font-bold' : 'text-[#5865F2]'
+                  ? theme === 'light' ? 'text-indigo-700 font-bold' : 'text-[#16B99A]'
                   : theme === 'light'
                   ? 'text-black group-hover:text-black font-semibold'
-                  : 'text-[#dbdee1] group-hover:text-white'
+                  : 'text-[#F8FAFC] group-hover:text-white'
               }`}
             >
               {user.name}
             </span>
             {user.role === 'Administrador' && (
-              <Shield className={`w-3.5 h-3.5 flex-shrink-0 ${theme === 'light' ? 'text-amber-700' : 'text-[#f0b232]'}`} />
+              <Shield className={`w-3.5 h-3.5 flex-shrink-0 ${theme === 'light' ? 'text-amber-700' : 'text-[#F59E0B]'}`} />
             )}
             {user.isBot && (
-              <span className={`bg-[#5865F2] text-white text-[9px] font-bold px-1 py-0.2 rounded uppercase flex items-center gap-0.5 ${theme === 'light' ? 'border border-black' : ''}`}>
-                <Bot className="w-2.5 h-2.5" /> BOT
+              <span className={`bg-[#16B99A]/15 text-[#16B99A] border border-[#16B99A]/30 text-[9px] font-bold px-1 py-0.2 rounded uppercase flex items-center gap-0.5 ${theme === 'light' ? 'border border-black' : ''}`}>
+                <Bot className="w-2.5 h-2.5" /> IA
               </span>
             )}
           </div>
@@ -139,10 +139,10 @@ export const MemberList: React.FC = () => {
 
   return (
     <>
-      <div className={`w-60 hidden lg:flex flex-col h-full select-none flex-shrink-0 border-l p-4 space-y-4 overflow-y-auto no-scrollbar transition-colors ${
+      <div className={`w-60 hidden lg:flex flex-col h-full select-none flex-shrink-0 border-l p-3.5 space-y-4 overflow-y-auto no-scrollbar transition-colors ${
         theme === 'light'
           ? 'bg-white border-black/20 text-black'
-          : 'bg-[#2b2d31] border-[#3e4047] text-[#dbdee1] shadow-sm'
+          : 'bg-[#1A1D23] border-[#22262E] text-[#F8FAFC]'
       }`}>
         {/* Quick Invite Button */}
         <button
@@ -150,10 +150,10 @@ export const MemberList: React.FC = () => {
             setServerManagementTab('members');
             setServerManagementModalOpen(true);
           }}
-          className={`w-full py-2.5 px-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all backdrop-blur-md hover:scale-[1.02] active:scale-95 ${
+          className={`w-full py-2 px-3 rounded-lg font-semibold text-xs flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 ${
             theme === 'light'
               ? 'bg-white hover:bg-slate-50 text-black border-2 border-black shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
-              : 'bg-gradient-to-r from-indigo-500/10 via-[#5865F2]/15 to-purple-500/10 hover:from-indigo-600 hover:to-[#5865F2] text-indigo-300 hover:text-white border border-indigo-500/30 hover:border-indigo-400/50 shadow-[0_0_15px_rgba(99,102,241,0.15)] hover:shadow-[0_0_20px_rgba(99,102,241,0.35)]'
+              : 'bg-[#16B99A]/10 hover:bg-[#16B99A]/20 text-[#16B99A] border border-[#16B99A]/30 hover:border-[#16B99A]/60'
           }`}
         >
           <UserPlus className="w-4 h-4" />

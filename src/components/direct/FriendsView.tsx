@@ -105,74 +105,74 @@ export const FriendsView: React.FC = () => {
   const pendingCount = friends.filter(f => f.relationshipStatus === 'pending_incoming').length;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#313338] select-none overflow-hidden">
+    <div className="flex-1 flex flex-col h-full bg-[#17191D] select-none overflow-hidden">
       {/* Top Header */}
       <div className={`h-12 border-b px-4 flex items-center justify-between shadow-sm flex-shrink-0 ${
         theme === 'light'
           ? 'bg-white border-black/20 text-black'
-          : 'bg-[#313338] border-[#3e4047] text-white'
+          : 'bg-[#1A1D23] border-[#22262E] text-white'
       }`}>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-white font-bold text-sm">
-            <Users className="w-5 h-5 text-[#80848e]" />
+            <Users className="w-5 h-5 text-[#94A3B8]" />
             <span>Amigos</span>
           </div>
 
-          <div className="w-[1px] h-4 bg-[#4e5058]" />
+          <div className="w-[1px] h-4 bg-[#2C313C]" />
 
           {/* Subtabs */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setDmSubTab('online')}
-              className={`px-2 py-1 rounded-md text-xs font-semibold transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                 dmSubTab === 'online'
-                  ? 'bg-[#404249] text-white'
-                  : 'text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1]'
+                  ? 'bg-[#22262E] text-white shadow-sm'
+                  : 'text-[#94A3B8] hover:bg-[#20242A] hover:text-[#F8FAFC]'
               }`}
             >
               Disponível ({onlineCount})
             </button>
             <button
               onClick={() => setDmSubTab('all')}
-              className={`px-2 py-1 rounded-md text-xs font-semibold transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                 dmSubTab === 'all'
-                  ? 'bg-[#404249] text-white'
-                  : 'text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1]'
+                  ? 'bg-[#22262E] text-white shadow-sm'
+                  : 'text-[#94A3B8] hover:bg-[#20242A] hover:text-[#F8FAFC]'
               }`}
             >
               Todos ({friends.filter(f => f.relationshipStatus === 'friend').length})
             </button>
             <button
               onClick={() => setDmSubTab('pending')}
-              className={`px-2 py-1 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 dmSubTab === 'pending'
-                  ? 'bg-[#404249] text-white'
-                  : 'text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1]'
+                  ? 'bg-[#22262E] text-white shadow-sm'
+                  : 'text-[#94A3B8] hover:bg-[#20242A] hover:text-[#F8FAFC]'
               }`}
             >
               Pendente
               {pendingCount > 0 && (
-                <span className="bg-[#f23f43] text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">
+                <span className="bg-[#16B99A] text-[#131519] text-[9px] font-bold px-1.5 py-0.2 rounded-full">
                   {pendingCount}
                 </span>
               )}
             </button>
             <button
               onClick={() => setDmSubTab('blocked')}
-              className={`px-2 py-1 rounded-md text-xs font-semibold transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                 dmSubTab === 'blocked'
-                  ? 'bg-[#404249] text-white'
-                  : 'text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1]'
+                  ? 'bg-[#22262E] text-white shadow-sm'
+                  : 'text-[#94A3B8] hover:bg-[#20242A] hover:text-[#F8FAFC]'
               }`}
             >
               Bloqueado
             </button>
             <button
               onClick={() => setDmSubTab('add')}
-              className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                 dmSubTab === 'add'
-                  ? 'bg-[#23a55a] text-white shadow'
-                  : 'text-[#23a55a] hover:bg-[#23a55a]/10'
+                  ? 'bg-[#16B99A] text-[#131519] shadow'
+                  : 'text-[#16B99A] hover:bg-[#16B99A]/10'
               }`}
             >
               Adicionar Amigo

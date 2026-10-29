@@ -21,6 +21,7 @@ supabase/functions/.env
 # Large temporary assets
 temp_*.glb
 *.tmp
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*

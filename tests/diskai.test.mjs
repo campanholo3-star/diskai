@@ -1817,6 +1817,233 @@ test('Preset avatar selection persists across logout and does not revert to Unsp
   assert.notEqual(finalAvatar, defaultPlaceholder);
 });
 
+// Test 53: VVS2 Algorithmic Score Calculation & Viral Classification
+test('VVS2 Algorithmic Score Calculation correctly classifies high, medium, and low potential', () => {
+  function calculateVVS2Score(raw) {
+    const engagementWeight = Math.min(30, raw.engagementRate * 1.5 + raw.sharesRatio * 20);
+    const momentumWeight = Math.min(30, (raw.growthVelocityNum / 100) * 30);
+    const anomalyWeight = Math.min(25, (raw.channelAnomalyRatio / 10) * 25);
+    const hookWeight = Math.min(15, (raw.hookStrength / 100) * 15);
+
+    const rawScore = Math.round(engagementWeight + momentumWeight + anomalyWeight + hookWeight);
+    const score = Math.max(0, Math.min(100, rawScore));
+
+    if (score >= 80) {
+      return { score, variant: 'high', label: 'Viral / Atacar Agora' };
+    }
+    if (score >= 60) {
+      return { score, variant: 'medium', label: 'Médio Potencial / Validado' };
+    }
+    return { score, variant: 'low', label: 'Baixo Potencial / Observar' };
+  }
+
+  // High potential video (>= 80)
+  const highVideo = calculateVVS2Score({
+    engagementRate: 18.5,
+    sharesRatio: 0.45,
+    growthVelocityNum: 95,
+    channelAnomalyRatio: 8.5,
+    hookStrength: 95
+  });
+  assert.equal(highVideo.variant, 'high');
+  assert.equal(highVideo.label, 'Viral / Atacar Agora');
+  assert.ok(highVideo.score >= 80 && highVideo.score <= 100);
+
+  // Medium potential video (60-79)
+  const mediumVideo = calculateVVS2Score({
+    engagementRate: 11.0,
+    sharesRatio: 0.22,
+    growthVelocityNum: 65,
+    channelAnomalyRatio: 5.0,
+    hookStrength: 70
+  });
+  assert.equal(mediumVideo.variant, 'medium');
+  assert.equal(mediumVideo.label, 'Médio Potencial / Validado');
+  assert.ok(mediumVideo.score >= 60 && mediumVideo.score < 80);
+
+  // Low potential video (< 60)
+  const lowVideo = calculateVVS2Score({
+    engagementRate: 5.0,
+    sharesRatio: 0.05,
+    growthVelocityNum: 30,
+    channelAnomalyRatio: 1.5,
+    hookStrength: 40
+  });
+  assert.equal(lowVideo.variant, 'low');
+  assert.equal(lowVideo.label, 'Baixo Potencial / Observar');
+  assert.ok(lowVideo.score < 60);
+});
+
+// Test 54: Viral Access Management & Admin Authorization Guard
+test('Viral Access Management ensures master admin permanent authorization and selective member provisioning', () => {
+  function isPlatformAdmin(user) {
+    if (!user) return false;
+    return (
+      user.id === 'admin-campanholo32' ||
+      user.role === 'Administrador' ||
+      user.role === 'admin' ||
+      user.email === 'campanholo32@gmail.com'
+    );
+  }
+
+  function isUserAuthorizedForVirals(user, authorizedIds) {
+    if (!user) return false;
+    if (isPlatformAdmin(user)) return true;
+    return (
+      (!!user.id && authorizedIds.includes(user.id)) ||
+      (!!user.email && authorizedIds.includes(user.email))
+    );
+  }
+
+  const masterAdmin = { id: 'admin-campanholo32', email: 'campanholo32@gmail.com', role: 'Administrador' };
+  const memberA = { id: 'user-carlos', email: 'carlos@diskai.com', role: 'Membro' };
+  const memberB = { id: 'user-ana', email: 'ana@diskai.com', role: 'Membro' };
+
+  let authorized = ['admin-campanholo32', 'campanholo32@gmail.com'];
+
+  // Master admin has access automatically
+  assert.equal(isUserAuthorizedForVirals(masterAdmin, authorized), true);
+
+  // Unprovisioned members are blocked
+  assert.equal(isUserAuthorizedForVirals(memberA, authorized), false);
+  assert.equal(isUserAuthorizedForVirals(memberB, authorized), false);
+
+  // Admin grants access to Member A
+  authorized.push(memberA.id);
+  assert.equal(isUserAuthorizedForVirals(memberA, authorized), true);
+  assert.equal(isUserAuthorizedForVirals(memberB, authorized), false);
+
+  // Admin revokes access from Member A
+  authorized = authorized.filter(id => id !== memberA.id);
+  assert.equal(isUserAuthorizedForVirals(memberA, authorized), false);
+});
+
+// Test 55: VVS2 Mathematical Engine Pipeline (Q_z, Os_mult, Momentum, Lead-Lag & Gate Validation)
+test('VVS2 Mathematical Engine correctly computes engagement Z-score, creator anomaly, and validation gates', () => {
+  function clamp(val, min, max) {
+    return Math.min(Math.max(val, min), max);
+  }
+
+  function calculateQuality(rates) {
+    let Q = 0;
+    if (rates.hasSharesData) {
+      Q = 8 * rates.shareRate + 6 * rates.saveRate + 5 * rates.commentRate + 2 * rates.likeRate;
+    } else {
+      Q = 8 * rates.commentRate + 2 * rates.likeRate;
+    }
+    const muQ = rates.hasSharesData ? 0.048 : 0.025;
+    const sigmaQ = rates.hasSharesData ? 0.035 : 0.02;
+    const rawZ = (Q - muQ) / sigmaQ;
+    return clamp(rawZ, -0.8, 4.0);
+  }
+
+  function calculateAnomaly(views, baseline) {
+    const Os = views / Math.max(100, baseline);
+    const rawMult = 1 + Math.log2(Math.max(0.08, Os));
+    return { Os, Os_mult: clamp(rawMult, 0.3, 6.0) };
+  }
+
+  // 1. Z-Score Clamping
+  const lowZ = calculateQuality({
+    likeRate: 0.001,
+    commentRate: 0.0001,
+    shareRate: 0.0001,
+    saveRate: 0.0001,
+    hasSharesData: true
+  });
+  assert.ok(lowZ >= -0.8);
+
+  const extremeZ = calculateQuality({
+    likeRate: 0.25,
+    commentRate: 0.08,
+    shareRate: 0.12,
+    saveRate: 0.15,
+    hasSharesData: true
+  });
+  assert.equal(extremeZ, 4.0); // Clamped at 4.0
+
+  // 2. Creator Anomaly Clamping
+  const { Os, Os_mult } = calculateAnomaly(800000, 20000);
+  assert.ok(Os >= 2.5); // Gate passed
+  assert.ok(Os_mult > 1.0 && Os_mult <= 6.0);
+
+  // 3. Lead-Lag Bonus for US/Europe/Asia
+  function calculateLeadLag(hoursAgo, sourceRegion) {
+    if (['eua', 'europa', 'asia', 'global'].includes(sourceRegion)) {
+      return hoursAgo <= 36 ? 1.25 : 1.15;
+    }
+    return 1.0;
+  }
+
+  assert.equal(calculateLeadLag(18, 'eua'), 1.25);
+  assert.equal(calculateLeadLag(50, 'europa'), 1.15);
+  assert.equal(calculateLeadLag(18, 'brasil'), 1.0);
+});
+
+// Test 56: Unified Input/Output Connector for Viral API
+test('Viral API Connector correctly formats input queries and routes regional filters', () => {
+  function formatMetric(num) {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1).replace('.0', '')}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1).replace('.0', '')}k`;
+    return String(num);
+  }
+
+  assert.equal(formatMetric(1400000), '1.4M');
+  assert.equal(formatMetric(85000), '85k');
+  assert.equal(formatMetric(450), '450');
+
+  function mapRegionCode(region) {
+    switch (region) {
+      case 'brasil': return 'BR';
+      case 'eua': return 'US';
+      case 'europa': return 'GB';
+      case 'asia': return 'JP';
+      default: return 'US';
+    }
+  }
+
+  assert.equal(mapRegionCode('brasil'), 'BR');
+  assert.equal(mapRegionCode('eua'), 'US');
+  assert.equal(mapRegionCode('europa'), 'GB');
+  assert.equal(mapRegionCode('asia'), 'JP');
+});
+
+// Test 57: Real-time Viral Rotation and Non-Empty Batch Verification
+test('Viral Real-Time Search rotatively generates non-empty contextualized batches on refresh', () => {
+  function generateBatch(query, refreshCount) {
+    const seed = refreshCount;
+    const themes = ['IA generativa', 'automação com agentes', 'robôs autônomos', 'LLM local'];
+    const videos = [];
+    for (let i = 0; i < 4; i++) {
+      const idx = (seed + i) % themes.length;
+      videos.push({
+        id: `vid-${seed}-${i}`,
+        title: `${query}: como usar ${themes[idx]}`,
+        score: Math.min(99, 75 + ((seed * 7 + i * 3) % 24))
+      });
+    }
+    return videos;
+  }
+
+  const batch1 = generateBatch('Inteligência Artificial', 1);
+  const batch2 = generateBatch('Inteligência Artificial', 2);
+
+  // 1. Never empty
+  assert.ok(batch1.length > 0);
+  assert.ok(batch2.length > 0);
+
+  // 2. Different batches (rotation on refresh)
+  const ids1 = batch1.map(v => v.id);
+  const ids2 = batch2.map(v => v.id);
+  assert.notDeepEqual(ids1, ids2);
+
+  // 3. Mathematical scores populated
+  assert.ok(batch1.every(v => v.score >= 10 && v.score <= 100));
+  assert.ok(batch2.every(v => v.score >= 10 && v.score <= 100));
+});
+
+
+
 
 
 

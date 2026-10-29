@@ -94,25 +94,25 @@ export const DirectSidebar: React.FC = () => {
     <div className={`w-60 flex flex-col h-full select-none flex-shrink-0 z-10 border-r transition-colors ${
       theme === 'light'
         ? 'bg-white border-black/20 text-black'
-        : 'bg-[#2b2d31] border-[#3e4047] text-[#dbdee1] shadow-sm'
+        : 'bg-[#1A1D23] border-[#22262E] text-[#F8FAFC]'
     }`}>
       {/* Top Search bar input */}
-      <div className={`h-12 border-b px-3 flex items-center shadow-sm ${
-        theme === 'light' ? 'border-black/20' : 'border-[#3e4047]'
+      <div className={`h-12 border-b px-3 flex items-center ${
+        theme === 'light' ? 'border-black/20' : 'border-[#22262E]'
       }`}>
-        <div className="w-full bg-[#1e1f22] text-[#dbdee1] text-xs font-semibold px-2 py-1.5 rounded flex items-center gap-2 border border-transparent focus-within:border-[#5865F2]">
-          <Search className="w-3.5 h-3.5 text-[#949ba4] flex-shrink-0" />
+        <div className="w-full bg-[#131519] text-[#F8FAFC] text-xs font-medium px-2.5 py-1.5 rounded-lg flex items-center gap-2 border border-[#2C313C] focus-within:border-[#16B99A] transition-colors">
+          <Search className="w-3.5 h-3.5 text-[#94A3B8] flex-shrink-0" />
           <input
             type="text"
             value={sidebarSearch}
             onChange={e => setSidebarSearch(e.target.value)}
             placeholder="Buscar conversa ou amigo..."
-            className="w-full bg-transparent text-xs text-white focus:outline-none placeholder:text-[#949ba4]"
+            className="w-full bg-transparent text-xs text-white focus:outline-none placeholder:text-[#64748B]"
           />
           {sidebarSearch && (
             <button
               onClick={() => setSidebarSearch('')}
-              className="text-[#949ba4] hover:text-white"
+              className="text-[#94A3B8] hover:text-white"
             >
               <X className="w-3 h-3" />
             </button>
@@ -126,24 +126,24 @@ export const DirectSidebar: React.FC = () => {
         <div className="space-y-0.5">
           <button
             onClick={() => setActiveDmUserId(null)}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-semibold transition-all ${
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
               activeDmUserId === null
-                ? 'bg-[#404249] text-white'
-                : 'text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1]'
+                ? 'bg-[#22262E] text-white border-l-2 border-[#16B99A] pl-2.5'
+                : 'text-[#94A3B8] hover:bg-[#20242A] hover:text-[#F8FAFC]'
             }`}
           >
-            <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-[#80848e]" />
+            <div className="flex items-center gap-2.5">
+              <Users className="w-4 h-4 text-[#94A3B8]" />
               <span>Amigos</span>
             </div>
             <div className="flex items-center gap-1.5">
               {onlineFriendsCount > 0 && (
-                <span className="text-[11px] text-[#23a55a] font-bold">
+                <span className="text-[11px] text-[#10B981] font-bold">
                   {onlineFriendsCount} online
                 </span>
               )}
               {pendingCount > 0 && (
-                <span className="bg-[#f23f43] text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                <span className="bg-[#16B99A] text-[#131519] text-[10px] font-bold px-1.5 py-0.2 rounded-full">
                   {pendingCount}
                 </span>
               )}
@@ -153,27 +153,27 @@ export const DirectSidebar: React.FC = () => {
           {/* Quick Beginner Tutorial Pill */}
           <button
             onClick={() => setTutorialOpen(true)}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-semibold text-[#5865F2] hover:bg-[#5865F2]/10 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-semibold text-[#F59E0B] hover:bg-[#F59E0B]/10 transition-colors"
           >
-            <Sparkles className="w-5 h-5 text-[#5865F2]" />
+            <Sparkles className="w-4 h-4 text-[#F59E0B]" />
             <div className="text-left leading-tight">
               <div>Tutorial do Iniciante</div>
-              <div className="text-[10px] text-[#949ba4]">Aprenda a usar o Diskai</div>
+              <div className="text-[10px] text-[#94A3B8]">Aprenda a usar o Diskai</div>
             </div>
           </button>
 
           {/* Arara Assistente Shortcut Pill */}
           <button
             onClick={() => setMacawModalOpen(true)}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-semibold text-[#38bdf8] bg-[#0284c7]/10 hover:bg-[#0284c7]/20 border border-[#38bdf8]/20 transition-all group"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold text-[#38bdf8] bg-[#0284c7]/10 hover:bg-[#0284c7]/20 border border-[#38bdf8]/20 transition-all group"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
                 <img src="/arara-mascote.png" alt="Arara" className="w-5 h-5 object-contain" />
               </div>
               <div className="text-left leading-tight">
                 <div className="text-xs font-bold text-white group-hover:text-[#38bdf8] transition-colors">Arara Assistente</div>
-                <div className="text-[10px] text-[#949ba4]">Agenda & IA DiskAI</div>
+                <div className="text-[10px] text-[#94A3B8]">Agenda & IA DiskAI</div>
               </div>
             </div>
             <span className="text-[9px] bg-[#0284c7] text-white font-bold px-1.5 py-0.5 rounded-full">
@@ -184,7 +184,7 @@ export const DirectSidebar: React.FC = () => {
 
         {/* Section Header: MENSAGENS DIRETAS */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between px-2 pt-2 text-[#949ba4] hover:text-[#dbdee1] text-[11px] font-bold tracking-wider uppercase">
+          <div className="flex items-center justify-between px-2 pt-2 text-[#94A3B8] hover:text-white text-[10.5px] font-bold tracking-wider uppercase">
             <span>Mensagens Diretas</span>
             <button
               onClick={() => {
@@ -192,7 +192,7 @@ export const DirectSidebar: React.FC = () => {
                 setDmSubTab('all');
               }}
               title="Iniciar nova conversa com amigo"
-              className="hover:text-white p-0.5 rounded hover:bg-[#35373c] transition-colors"
+              className="hover:text-white p-0.5 rounded hover:bg-[#20242A] transition-colors"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -202,14 +202,14 @@ export const DirectSidebar: React.FC = () => {
           <div className="space-y-[2px]">
             {filteredDmFriends.length === 0 ? (
               <div className="text-center py-6 px-3 space-y-2">
-                <MessageSquare className="w-8 h-8 text-[#949ba4]/40 mx-auto" />
-                <p className="text-xs text-[#949ba4]">Nenhuma conversa encontrada</p>
+                <MessageSquare className="w-8 h-8 text-[#94A3B8]/30 mx-auto" />
+                <p className="text-xs text-[#94A3B8]">Nenhuma conversa encontrada</p>
                 <button
                   onClick={() => {
                     setActiveDmUserId(null);
                     setDmSubTab('all');
                   }}
-                  className="text-xs text-[#5865F2] hover:underline font-semibold"
+                  className="text-xs text-[#16B99A] hover:underline font-semibold"
                 >
                   Ver todos os amigos
                 </button>
@@ -224,12 +224,12 @@ export const DirectSidebar: React.FC = () => {
                   <div key={friend.id} className="relative group">
                     <button
                       onClick={() => setActiveDmUserId(friend.id)}
-                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-md text-sm transition-all ${
+                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-sm transition-all ${
                         isActive
-                          ? 'bg-[#404249] text-white font-medium shadow-sm'
+                          ? 'bg-[#22262E] text-white font-medium border-l-2 border-[#16B99A] pl-2'
                           : isUserInDmCall
-                          ? 'bg-[#23a55a]/15 text-[#23a55a] font-medium'
-                          : 'text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1]'
+                          ? 'bg-[#10B981]/15 text-[#10B981] font-medium border-l-2 border-[#10B981] pl-2'
+                          : 'text-[#94A3B8] hover:bg-[#20242A] hover:text-[#F8FAFC]'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate min-w-0">
@@ -237,63 +237,48 @@ export const DirectSidebar: React.FC = () => {
                           <img
                             src={friend.user.avatar}
                             alt={friend.user.name}
-                            className="w-8 h-8 rounded-full object-cover"
+                            className="w-8 h-8 rounded-lg object-cover ring-1 ring-white/10"
                           />
                           <div
-                            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-[#2b2d31] ${
+                            className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-[#1A1D23] ${
                               friend.user.status === 'online'
-                                ? 'bg-[#23a55a]'
+                                ? 'bg-[#10B981]'
                                 : friend.user.status === 'idle'
-                                ? 'bg-[#f0b232]'
+                                ? 'bg-[#F59E0B]'
                                 : friend.user.status === 'dnd'
-                                ? 'bg-[#f23f43]'
-                                : 'bg-[#80848e]'
+                                ? 'bg-[#EF4444]'
+                                : 'bg-[#64748B]'
                             }`}
                           />
                         </div>
-                        <div className="truncate text-left flex-1 min-w-0">
-                          <div className="truncate flex items-center justify-between gap-1 leading-tight">
-                            <span className={`truncate font-semibold ${isActive ? 'text-white' : ''}`}>
-                              {friend.user.name}
-                            </span>
-                            {friend.lastMessageTime && (
-                              <span className="text-[10px] text-[#949ba4] flex-shrink-0 opacity-80">
-                                {friend.lastMessageTime}
-                              </span>
-                            )}
+                        <div className="truncate text-left">
+                          <div className={`text-xs font-semibold truncate ${isActive ? 'text-white' : 'text-[#F8FAFC]'}`}>
+                            {friend.user.name}
                           </div>
-                          {friend.lastMessage ? (
-                            <div className="text-[11px] text-[#949ba4] truncate leading-tight mt-0.5">
-                              {friend.lastMessage}
-                            </div>
-                          ) : friend.user.activity ? (
-                            <div className="text-[10px] text-[#5865F2] truncate leading-tight mt-0.5 font-medium">
-                              Jogando {friend.user.activity.name}
-                            </div>
-                          ) : (
-                            <div className="text-[10px] text-[#80848e] truncate leading-tight mt-0.5">
-                              #{friend.user.tag}
-                            </div>
-                          )}
+                          <div className="text-[11px] text-[#94A3B8] truncate max-w-[120px]">
+                            {friend.lastMessage || `#${friend.user.tag}`}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 flex-shrink-0 ml-1">
-                        {friend.unreadCount ? (
-                          <span className="bg-[#f23f43] text-white text-[10px] font-black px-1.5 py-0.2 rounded-full shadow">
+                      {/* Unread badge & close DM button */}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {friend.unreadCount && friend.unreadCount > 0 ? (
+                          <span className="bg-[#16B99A] text-[#131519] text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                             {friend.unreadCount}
                           </span>
                         ) : null}
-                        <div
-                          onClick={(e) => {
+
+                        <button
+                          onClick={e => {
                             e.stopPropagation();
                             closeDmConversation(friend.id);
                           }}
-                          className="opacity-0 group-hover:opacity-100 p-1 hover:text-white rounded hover:bg-[#1e1f22]"
-                          title="Fechar conversa (não remove amizade)"
+                          title="Fechar conversa"
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#2C313C] rounded text-[#94A3B8] hover:text-white transition-all"
                         >
-                          <X className="w-3 h-3 text-[#949ba4]" />
-                        </div>
+                          <X className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </button>
                   </div>
@@ -330,34 +315,34 @@ export const DirectSidebar: React.FC = () => {
       )}
 
       {/* User Profile Bar */}
-      <div className={`h-[52px] px-2 flex items-center justify-between select-none transition-colors ${
+      <div className={`h-[54px] px-2.5 flex items-center justify-between select-none transition-colors ${
         theme === 'light'
           ? 'bg-white border-t-2 border-black text-black'
-          : 'bg-[#232428] border-t border-[#3e4047]'
+          : 'bg-[#131519] border-t border-[#22262E]'
       }`}>
         <div
           onClick={() => setSettingsModalOpen(true)}
-          className={`flex items-center gap-2 p-1 -ml-1 rounded-md cursor-pointer max-w-[125px] transition-colors ${
-            theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#35373c]'
+          className={`flex items-center gap-2 p-1 -ml-1 rounded-lg cursor-pointer max-w-[125px] transition-colors ${
+            theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#1A1D23]'
           }`}
         >
           <div className="relative flex-shrink-0">
             <img
               src={currentUser.avatar}
               alt={currentUser.name}
-              className={`w-8 h-8 rounded-full object-cover ${theme === 'light' ? 'border border-black/20' : ''}`}
+              className={`w-8 h-8 rounded-lg object-cover ${theme === 'light' ? 'border border-black/20' : 'ring-1 ring-white/10'}`}
             />
             <div
-              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ${
-                theme === 'light' ? 'ring-white' : 'ring-[#232428]'
+              className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ${
+                theme === 'light' ? 'ring-white' : 'ring-[#131519]'
               } ${
                 currentUser.status === 'online'
-                  ? 'bg-[#23a55a]'
+                  ? 'bg-[#10B981]'
                   : currentUser.status === 'idle'
-                  ? 'bg-[#f0b232]'
+                  ? 'bg-[#F59E0B]'
                   : currentUser.status === 'dnd'
-                  ? 'bg-[#f23f43]'
-                  : 'bg-[#80848e]'
+                  ? 'bg-[#EF4444]'
+                  : 'bg-[#64748B]'
               }`}
             />
           </div>
@@ -375,43 +360,43 @@ export const DirectSidebar: React.FC = () => {
           </div>
         </div>
 
-        <div className={`flex items-center gap-1 ${theme === 'light' ? 'text-black' : 'text-[#b5bac1]'}`}>
+        <div className={`flex items-center gap-1 ${theme === 'light' ? 'text-black' : 'text-[#94A3B8]'}`}>
           <button
             onClick={toggleMute}
             title={isMuted ? 'Desativar Mudo' : 'Ativar Mudo'}
-            className={`p-1.5 rounded-xl transition-all duration-200 border backdrop-blur-sm ${
+            className={`p-1.5 rounded-lg transition-all duration-200 border ${
               isMuted
-                ? 'bg-[#f23f43]/15 border-[#f23f43]/40 text-[#f23f43] shadow-sm shadow-[#f23f43]/20 scale-105'
+                ? 'bg-[#EF4444]/15 border-[#EF4444]/40 text-[#EF4444] shadow-sm'
                 : theme === 'light'
-                ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black hover:scale-105'
-                : 'bg-white/[0.03] hover:bg-white/[0.08] border-white/[0.05] hover:border-white/[0.15] text-[#949ba4] hover:text-white hover:scale-105'
+                ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black'
+                : 'bg-white/[0.03] hover:bg-white/[0.08] border-[#2C313C] text-[#94A3B8] hover:text-white'
             }`}
           >
-            {isMuted ? <MicOff className="w-4 h-4 animate-pulse" /> : <Mic className="w-4 h-4" />}
+            {isMuted ? <MicOff className="w-3.5 h-3.5 animate-pulse" /> : <Mic className="w-3.5 h-3.5" />}
           </button>
           <button
             onClick={toggleDeafen}
             title={isDeafened ? 'Desativar Ensudecer' : 'Ensurdecer'}
-            className={`p-1.5 rounded-xl transition-all duration-200 border backdrop-blur-sm ${
+            className={`p-1.5 rounded-lg transition-all duration-200 border ${
               isDeafened
-                ? 'bg-[#f23f43]/15 border-[#f23f43]/40 text-[#f23f43] shadow-sm shadow-[#f23f43]/20 scale-105'
+                ? 'bg-[#EF4444]/15 border-[#EF4444]/40 text-[#EF4444] shadow-sm'
                 : theme === 'light'
-                ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black hover:scale-105'
-                : 'bg-white/[0.03] hover:bg-white/[0.08] border-white/[0.05] hover:border-white/[0.15] text-[#949ba4] hover:text-white hover:scale-105'
+                ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black'
+                : 'bg-white/[0.03] hover:bg-white/[0.08] border-[#2C313C] text-[#94A3B8] hover:text-white'
             }`}
           >
-            <Headphones className="w-4 h-4" />
+            <Headphones className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setSettingsModalOpen(true)}
             title="Configurações de Usuário & IA"
-            className={`p-1.5 rounded-xl border hover:scale-105 transition-all duration-200 backdrop-blur-sm group ${
+            className={`p-1.5 rounded-lg border transition-all duration-200 group ${
               theme === 'light'
                 ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black'
-                : 'bg-white/[0.03] hover:bg-white/[0.08] border-white/[0.05] hover:border-white/[0.15] text-[#949ba4] hover:text-white'
+                : 'bg-white/[0.03] hover:bg-white/[0.08] border-[#2C313C] text-[#94A3B8] hover:text-white'
             }`}
           >
-            <Settings className="w-4 h-4 group-hover:rotate-45 transition-transform duration-300" />
+            <Settings className="w-3.5 h-3.5 group-hover:rotate-45 transition-transform duration-300" />
           </button>
           <button
             onClick={async () => {
@@ -420,13 +405,13 @@ export const DirectSidebar: React.FC = () => {
               }
             }}
             title="Sair da Conta (Logout)"
-            className={`p-1.5 rounded-xl border hover:scale-105 transition-all duration-200 backdrop-blur-sm ${
+            className={`p-1.5 rounded-lg border transition-all duration-200 ${
               theme === 'light'
                 ? 'bg-rose-50 hover:bg-rose-100 border-black/20 text-rose-700'
-                : 'bg-white/[0.03] hover:bg-[#f23f43]/15 border-white/[0.05] hover:border-[#f23f43]/30 text-[#949ba4] hover:text-[#f23f43]'
+                : 'bg-white/[0.03] hover:bg-[#EF4444]/15 border-[#2C313C] hover:border-[#EF4444]/30 text-[#94A3B8] hover:text-[#EF4444]'
             }`}
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
