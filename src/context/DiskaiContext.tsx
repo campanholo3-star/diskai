@@ -881,7 +881,7 @@ export const DiskaiProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Fetch direct messages from Supabase whenever active DM user changes
   useEffect(() => {
-    if (activeDmUserId) {
+    if (activeDmUserId && currentUser?.id) {
       const client = getSupabaseClient();
       client
         .from('messages')

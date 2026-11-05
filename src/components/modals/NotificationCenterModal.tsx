@@ -75,13 +75,13 @@ export const NotificationCenterModal: React.FC<NotificationCenterProps> = ({ onC
       onClick={e => e.stopPropagation()}
       className={`w-80 md:w-96 rounded-2xl shadow-2xl overflow-hidden flex flex-col select-none z-50 animate-in fade-in duration-150 transition-colors ${
         theme === 'light'
-          ? 'bg-white text-black border-2 border-black shadow-[0_12px_36px_rgba(0,0,0,0.18)]'
+          ? 'bg-white text-slate-900 border border-slate-200 shadow-2xl'
           : 'bg-[#2b2d31] border border-[#3e4047] text-[#dbdee1]'
       }`}
     >
       {/* Header */}
       <div className={`p-3.5 border-b flex items-center justify-between ${
-        theme === 'light' ? 'bg-slate-50 border-black/20 text-black' : 'bg-[#232428] border-[#1f2023] text-white'
+        theme === 'light' ? 'bg-slate-50 border-slate-200 text-slate-900' : 'bg-[#232428] border-[#1f2023] text-white'
       }`}>
         <div className="flex items-center gap-2 font-bold text-sm">
           <Bell className="w-4 h-4 text-[#5865F2]" />
@@ -99,7 +99,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterProps> = ({ onC
             title="Marcar todas como lidas"
             className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
               theme === 'light'
-                ? 'hover:bg-slate-200 text-slate-700 hover:text-black border border-black/20'
+                ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200'
                 : 'hover:text-white text-[#949ba4] hover:bg-[#35373c]'
             }`}
           >
@@ -114,7 +114,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterProps> = ({ onC
               title="Limpar e concluir todas as notificações"
               className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
                 theme === 'light'
-                  ? 'hover:bg-rose-100 text-rose-700 border border-black/20'
+                  ? 'hover:bg-rose-50 text-rose-600 border border-slate-200'
                   : 'hover:text-rose-400 text-[#949ba4] hover:bg-rose-500/10'
               }`}
             >
@@ -141,7 +141,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterProps> = ({ onC
             {showMuteMenu && (
               <div className={`absolute top-full right-0 mt-1.5 w-56 rounded-xl shadow-2xl p-1.5 z-50 text-xs border animate-in fade-in zoom-in-95 duration-100 ${
                 theme === 'light'
-                  ? 'bg-white border-2 border-black text-black'
+                  ? 'bg-white border border-slate-200 text-slate-900 shadow-xl'
                   : 'bg-[#1e1f22] border-[#3e4047] text-white'
               }`}>
                 <div className="px-2.5 py-1.5 text-[10px] font-bold text-[#949ba4] uppercase tracking-wider border-b border-white/5 flex items-center justify-between">
@@ -215,8 +215,8 @@ export const NotificationCenterModal: React.FC<NotificationCenterProps> = ({ onC
               className={`p-3 rounded-xl border transition-all flex items-start gap-3 relative group ${
                 theme === 'light'
                   ? notif.read
-                    ? 'bg-slate-50 border-black/10 text-slate-600'
-                    : 'bg-white border-2 border-black text-black shadow-sm'
+                    ? 'bg-slate-50 border-slate-200 text-slate-600'
+                    : 'bg-white border border-slate-200 text-slate-900 shadow-xs'
                   : notif.read
                   ? 'bg-[#313338]/50 border-transparent text-[#949ba4]'
                   : 'bg-[#313338] border-[#5865F2]/40 text-white'
@@ -235,7 +235,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterProps> = ({ onC
 
               <div className="flex-1 min-w-0 pr-6">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className={`font-bold truncate ${theme === 'light' ? 'text-black' : 'text-white'}`}>
+                  <span className={`font-bold truncate ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
                     {notif.title}
                   </span>
                   <span className={`text-[10px] ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>
@@ -262,7 +262,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterProps> = ({ onC
 
                 {/* Friend Request Action Buttons: Aceitar / Recusar */}
                 {(notif.type === 'friend' || notif.title.toLowerCase().includes('amizade')) && (
-                  <div className="mt-2.5 pt-2 border-t border-black/10 flex items-center gap-2">
+                  <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center gap-2">
                     {actionFeedback[notif.id] ? (
                       <span className={`text-[11px] font-bold flex items-center gap-1.5 ${
                         actionFeedback[notif.id].status === 'accepted' ? 'text-[#23a55a]' : 'text-slate-500'
@@ -283,7 +283,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterProps> = ({ onC
                           onClick={() => handleDeclineFriend(notif)}
                           className={`active:scale-95 text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
                             theme === 'light'
-                              ? 'bg-slate-100 hover:bg-slate-200 text-black border border-black/20'
+                              ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200'
                               : 'bg-[#35373c] hover:bg-[#3e4047] hover:text-[#f23f43] text-[#dbdee1]'
                           }`}
                         >

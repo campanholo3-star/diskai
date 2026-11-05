@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDiskai } from './context/DiskaiContext';
 import { ServerSidebar } from './components/sidebar/ServerSidebar';
 import { ChannelSidebar } from './components/sidebar/ChannelSidebar';
@@ -29,6 +29,8 @@ import { AdminCreateUserModal } from './components/modals/AdminCreateUserModal';
 import { LoginView } from './components/auth/LoginView';
 import { MacawMascot } from './components/assistant/MacawMascot';
 import { MessageSquare, Video, Sparkles, ShieldCheck } from 'lucide-react';
+import { initVoiceCommand } from './services/voiceCommandService';
+import { VoiceCommandOverlay } from './components/voice/VoiceCommandOverlay';
 
 export const AppContent: React.FC = () => {
   const {
@@ -59,7 +61,8 @@ export const AppContent: React.FC = () => {
     acceptIncomingCall,
     rejectIncomingCall,
     endLiveKitCall,
-    isVideoOn
+    isVideoOn,
+    theme
   } = useDiskai();
 
   const [activeCallViewMode, setActiveCallViewMode] = useState<'call' | 'chat'>('call');
@@ -78,6 +81,22 @@ export const AppContent: React.FC = () => {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Inicializa o comando de voz nativo global (Ctrl + Espaço)
+  useEffect(() => {
+    const controller = initVoiceCommand((transcript) => {
+      // Dispara evento de comando de voz pronto para o ecossistema DiskAi (Gemini / Assistente)
+      window.dispatchEvent(
+        new CustomEvent('diskai-voice-transcript', {
+          detail: { text: transcript }
+        })
+      );
+    });
+
+    return () => {
+      controller.destroy();
+    };
   }, []);
 
   // Guard de autenticação: se o usuário estiver deslogado, exibe a tela de login
@@ -144,7 +163,9 @@ export const AppContent: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#131519] text-[#F8FAFC] font-sans">
+    <div className={`flex h-screen w-screen overflow-hidden font-sans transition-colors ${
+      theme === 'light' ? 'bg-slate-50 text-slate-900' : 'bg-[#131519] text-[#F8FAFC]'
+    }`}>
       {/* 1. Server List Sidebar (Far Left) */}
       <ServerSidebar />
 
@@ -156,22 +177,30 @@ export const AppContent: React.FC = () => {
         {isInCall ? (
           <>
             {/* View Mode Switcher Header when in call */}
-            <div className="h-9 bg-[#1A1D23] px-4 flex items-center justify-between text-xs border-b border-[#22262E] flex-shrink-0 z-30">
+            <div className={`h-9 px-4 flex items-center justify-between text-xs border-b flex-shrink-0 z-30 transition-colors ${
+              theme === 'light'
+                ? 'bg-slate-100 border-slate-200 text-slate-800'
+                : 'bg-[#1A1D23] border-[#22262E] text-white'
+            }`}>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-                <span className="font-semibold text-white">
+                <span className={`font-semibold ${theme === 'light' ? 'text-slate-800' : 'text-white'}`}>
                   Conectado à chamada:{' '}
                   {activeDmCallUser ? `1-on-1 com ${activeDmCallUser.name}` : activeVoiceChannel?.name}
                 </span>
               </div>
 
-              <div className="flex items-center gap-1 bg-[#131519] p-0.5 rounded-lg border border-[#2C313C]">
+              <div className={`flex items-center gap-1 p-0.5 rounded-lg border transition-colors ${
+                theme === 'light'
+                  ? 'bg-slate-200 border-slate-300'
+                  : 'bg-[#131519] border-[#2C313C]'
+              }`}>
                 <button
                   onClick={() => setActiveCallViewMode('call')}
                   className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold text-[11px] transition-all ${
                     activeCallViewMode === 'call'
-                      ? 'bg-[#16B99A] text-[#131519] shadow'
-                      : 'text-[#94A3B8] hover:text-white'
+                      ? 'bg-[#16B99A] text-white shadow-sm'
+                      : theme === 'light' ? 'text-slate-600 hover:text-slate-900' : 'text-[#94A3B8] hover:text-white'
                   }`}
                 >
                   <Video className="w-3.5 h-3.5" />
@@ -181,8 +210,8 @@ export const AppContent: React.FC = () => {
                   onClick={() => setActiveCallViewMode('chat')}
                   className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold text-[11px] transition-all ${
                     activeCallViewMode === 'chat'
-                      ? 'bg-[#16B99A] text-[#131519] shadow'
-                      : 'text-[#94A3B8] hover:text-white'
+                      ? 'bg-[#16B99A] text-white shadow-sm'
+                      : theme === 'light' ? 'text-slate-600 hover:text-slate-900' : 'text-[#94A3B8] hover:text-white'
                   }`}
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
@@ -266,6 +295,7 @@ export const AppContent: React.FC = () => {
       />
       <MacawMascot />
       <UnreadPopupToast />
+      <VoiceCommandOverlay />
     </div>
   );
 };

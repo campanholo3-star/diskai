@@ -110,7 +110,7 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
       style={{ top: `${top}px`, right: `${right}px` }}
       className={`fixed z-50 w-72 md:w-80 rounded-2xl shadow-2xl overflow-hidden select-none animate-in fade-in zoom-in-95 duration-150 transition-colors ${
         theme === 'light'
-          ? 'bg-white text-black border-2 border-black shadow-[0_12px_36px_rgba(0,0,0,0.18)]'
+          ? 'bg-white text-slate-900 border border-slate-200 shadow-2xl'
           : 'bg-[#232428] text-[#dbdee1] border border-[#35363c]'
       }`}
       onClick={e => e.stopPropagation()}
@@ -118,7 +118,7 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
       {/* Top Banner */}
       <div
         className={`h-20 w-full relative transition-colors duration-200 ${
-          theme === 'light' ? 'border-b-2 border-black' : ''
+          theme === 'light' ? 'border-b border-slate-200' : ''
         }`}
         style={{ backgroundColor: bannerColor }}
       >
@@ -131,9 +131,9 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
               title={isFriend ? 'Já são amigos (clique para remover)' : 'Adicionar Amigo'}
               className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md active:scale-95 ${
                 isFriend
-                  ? 'bg-[#23a55a] text-white hover:bg-[#1f9250] border border-black/20'
+                  ? 'bg-[#23a55a] text-white hover:bg-[#1f9250] border border-white/20'
                   : theme === 'light'
-                  ? 'bg-white text-black hover:bg-slate-100 border-2 border-black shadow'
+                  ? 'bg-white text-slate-800 hover:bg-slate-100 border border-slate-200 shadow'
                   : 'bg-black/50 text-white hover:bg-black/70'
               }`}
             >
@@ -149,7 +149,7 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
               title="Ligar para usuário"
               className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md active:scale-95 ${
                 theme === 'light'
-                  ? 'bg-white text-black hover:bg-slate-100 border-2 border-black shadow'
+                  ? 'bg-white text-slate-800 hover:bg-slate-100 border border-slate-200 shadow'
                   : 'bg-black/50 text-white hover:bg-black/70'
               }`}
             >
@@ -165,7 +165,7 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
               title="Iniciar Videochamada LiveKit"
               className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md active:scale-95 ${
                 theme === 'light'
-                  ? 'bg-white text-black hover:bg-slate-100 border-2 border-black shadow'
+                  ? 'bg-white text-slate-800 hover:bg-slate-100 border border-slate-200 shadow'
                   : 'bg-black/50 text-white hover:bg-black/70'
               }`}
             >
@@ -177,13 +177,13 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
 
       {/* Avatar e Status Indicator */}
       <div className={`px-4 pb-4 pt-0 relative transition-colors ${
-        theme === 'light' ? 'bg-white text-black' : 'bg-[#111214] text-[#dbdee1]'
+        theme === 'light' ? 'bg-white text-slate-900' : 'bg-[#111214] text-[#dbdee1]'
       }`}>
         <div className="relative -top-11 mb-[-36px] flex items-end justify-between">
           <div className="relative">
             <div className={`w-20 h-20 rounded-full ring-[6px] overflow-hidden shadow-xl ${
               theme === 'light'
-                ? 'ring-white bg-slate-200 border-2 border-black'
+                ? 'ring-white bg-slate-100 border border-slate-200'
                 : 'ring-[#111214] bg-[#2b2d31]'
             }`}>
               <img
@@ -195,7 +195,7 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
             {/* Status dot */}
             <div
               className={`absolute bottom-0 right-0 w-5 h-5 rounded-full ring-4 flex items-center justify-center ${
-                theme === 'light' ? 'ring-white border border-black/30' : 'ring-[#111214]'
+                theme === 'light' ? 'ring-white border border-slate-200' : 'ring-[#111214]'
               } ${
                 user.status === 'online'
                   ? 'bg-[#23a55a]'
@@ -210,9 +210,9 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
 
           {/* Badges de papel / role */}
           {user.role === 'Administrador' && (
-            <span className={`flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full mb-1 ${
+            <span className={`flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full mb-1 shadow-sm ${
               theme === 'light'
-                ? 'bg-amber-100 text-amber-900 border-2 border-black'
+                ? 'bg-amber-50 text-amber-800 border border-amber-200'
                 : 'bg-[#f0b232]/10 text-[#f0b232] border border-[#f0b232]/30'
             }`}>
               <Shield className="w-3 h-3" />
@@ -220,8 +220,8 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
             </span>
           )}
           {user.isBot && (
-            <span className={`flex items-center gap-1 text-[10px] font-bold bg-[#5865F2] text-white px-2 py-0.5 rounded-full uppercase mb-1 ${
-              theme === 'light' ? 'border-2 border-black' : ''
+            <span className={`flex items-center gap-1 text-[10px] font-bold bg-[#5865F2] text-white px-2 py-0.5 rounded-full uppercase mb-1 shadow-sm ${
+              theme === 'light' ? 'border border-[#4752c4]' : ''
             }`}>
               <Bot className="w-3 h-3" /> BOT
             </span>
@@ -232,12 +232,12 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
         <div className="pt-2 space-y-2">
           <div>
             <h3 className={`text-lg font-bold leading-tight flex items-center gap-1.5 ${
-              theme === 'light' ? 'text-black font-extrabold' : 'text-white'
+              theme === 'light' ? 'text-slate-900' : 'text-white'
             }`}>
               {user.name}
             </h3>
             <p className={`text-xs font-semibold ${
-              theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'
+              theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'
             }`}>
               @{user.name.toLowerCase().replace(/\s+/g, '')}
               {user.tag && <span className="opacity-75">#{user.tag}</span>}
@@ -246,19 +246,19 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
 
           {/* Resumo de Servidores e Amigos Mútuos */}
           <div className={`flex items-center gap-2 pt-1 text-[11px] border-t ${
-            theme === 'light' ? 'text-slate-700 border-black/15 font-medium' : 'text-[#949ba4] border-[#2b2d31]'
+            theme === 'light' ? 'text-slate-600 border-slate-100 font-medium' : 'text-[#949ba4] border-[#2b2d31]'
           }`}>
             <div className="flex -space-x-1.5 overflow-hidden">
               <img
                 className={`inline-block h-4 w-4 rounded-full ring-1 ${
-                  theme === 'light' ? 'ring-black/30' : 'ring-[#111214]'
+                  theme === 'light' ? 'ring-slate-200' : 'ring-[#111214]'
                 }`}
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=50"
                 alt=""
               />
               <img
                 className={`inline-block h-4 w-4 rounded-full ring-1 ${
-                  theme === 'light' ? 'ring-black/30' : 'ring-[#111214]'
+                  theme === 'light' ? 'ring-slate-200' : 'ring-[#111214]'
                 }`}
                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50"
                 alt=""
@@ -273,13 +273,13 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
           {user.customStatus && (
             <div className="pt-1">
               <div className={`text-[10px] uppercase font-bold tracking-wider mb-1 ${
-                theme === 'light' ? 'text-black' : 'text-[#949ba4]'
+                theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'
               }`}>
                 Atividade / Status
               </div>
               <div className={`text-xs px-2.5 py-1.5 rounded-lg inline-block ${
                 theme === 'light'
-                  ? 'bg-slate-100 text-black border-2 border-black font-semibold'
+                  ? 'bg-slate-50 text-slate-800 border border-slate-200 font-medium'
                   : 'text-[#dbdee1] bg-[#1e1f22] border border-[#2b2d31]'
               }`}>
                 {user.customStatus}
@@ -290,7 +290,7 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
           {user.bio && (
             <div className={`pt-1 text-xs leading-relaxed italic p-2 rounded-lg ${
               theme === 'light'
-                ? 'bg-slate-100 text-slate-800 border-2 border-black font-medium'
+                ? 'bg-slate-50 text-slate-700 border border-slate-200 font-medium'
                 : 'text-[#b5bac1] bg-[#1e1f22]/50 border border-[#2b2d31]/50'
             }`}>
               "{user.bio}"
@@ -300,7 +300,7 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
           {/* Campo de Mensagem Rápida (Conversar com @Nome) */}
           {!isSelf && (
             <div className={`pt-3 border-t relative ${
-              theme === 'light' ? 'border-black/15' : 'border-[#2b2d31]'
+              theme === 'light' ? 'border-slate-100' : 'border-[#2b2d31]'
             }`}>
               <form onSubmit={handleSendQuickMessage} className="relative flex items-center">
                 <input
@@ -310,7 +310,7 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
                   placeholder={`Conversar com @${user.name}`}
                   className={`w-full rounded-xl pl-3 pr-16 py-2 text-xs transition-colors ${
                     theme === 'light'
-                      ? 'bg-white border-2 border-black text-black placeholder:text-slate-500 shadow-sm focus:outline-none focus:ring-1 focus:ring-black'
+                      ? 'bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:border-[#16B99A]'
                       : 'bg-[#1e1f22] border border-[#35363c] text-white placeholder-[#949ba4] focus:outline-none focus:border-[#5865F2]'
                   }`}
                 />

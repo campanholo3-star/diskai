@@ -21,7 +21,8 @@ export const ServerSidebar: React.FC = () => {
     setServerManagementModalOpen,
     setServerManagementTab,
     deleteServer,
-    currentUser
+    currentUser,
+    theme
   } = useDiskai();
 
   const [hoveredServerId, setHoveredServerId] = useState<string | null>(null);
@@ -46,7 +47,9 @@ export const ServerSidebar: React.FC = () => {
   const totalDmUnread = friends.reduce((acc, f) => acc + (f.unreadCount || 0), 0);
 
   return (
-    <div className="w-[68px] bg-[#131519] flex flex-col items-center py-3.5 select-none flex-shrink-0 z-20 space-y-2.5 h-full border-r border-[#22262E] shadow-sm">
+    <div className={`w-[68px] flex flex-col items-center py-3.5 select-none flex-shrink-0 z-20 space-y-2.5 h-full border-r transition-colors shadow-sm ${
+      theme === 'light' ? 'bg-slate-100 border-slate-200' : 'bg-[#131519] border-[#22262E]'
+    }`}>
       {/* Home / Direct Messages / Diskai Logo */}
       <div className="relative group flex items-center justify-center w-full">
         {/* Active Indicator Bar */}
@@ -61,12 +64,12 @@ export const ServerSidebar: React.FC = () => {
           onMouseLeave={() => setHoveredServerId(null)}
           className={`w-11 h-11 rounded-xl transition-all duration-200 flex items-center justify-center relative ${
             mainView === 'direct'
-              ? 'ring-2 ring-[#16B99A] ring-offset-2 ring-offset-[#131519] shadow-lg shadow-[#16B99A]/20'
-              : 'border border-white/10 hover:border-[#16B99A]/50 opacity-90 hover:opacity-100 hover:scale-[1.03]'
+              ? 'ring-2 ring-[#16B99A] ring-offset-2 ring-offset-slate-100 dark:ring-offset-[#131519] shadow-lg shadow-[#16B99A]/20'
+              : 'border border-black/10 dark:border-white/10 hover:border-[#16B99A]/50 opacity-90 hover:opacity-100 hover:scale-[1.03]'
           }`}
         >
           {/* Inner Image Container (prevent clipping of notification badge) */}
-          <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-[#1A1D23]">
+          <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-white dark:bg-[#1A1D23]">
             <img
               src="/app-icon.png"
               alt="Diskai"
@@ -75,13 +78,13 @@ export const ServerSidebar: React.FC = () => {
           </div>
 
           {isRecording && (
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#EF4444] rounded-full ring-2 ring-[#131519] animate-ping z-20" />
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#EF4444] rounded-full ring-2 ring-slate-100 dark:ring-[#131519] animate-ping z-20" />
           )}
 
           {/* Notificação no Ícone Superior */}
           {totalDmUnread > 0 && mainView !== 'direct' && (
             <div className="absolute -top-1.5 -right-1.5 z-30 pointer-events-none flex items-center justify-center">
-              <span className="bg-[#16B99A] text-[#131519] text-[11px] font-black min-w-[20px] h-5 px-1.5 rounded-full ring-2 ring-[#131519] flex items-center justify-center shadow-lg transition-transform duration-200 group-hover:scale-110">
+              <span className="bg-[#16B99A] text-white dark:text-[#131519] text-[11px] font-black min-w-[20px] h-5 px-1.5 rounded-full ring-2 ring-slate-100 dark:ring-[#131519] flex items-center justify-center shadow-lg transition-transform duration-200 group-hover:scale-110">
                 {totalDmUnread}
               </span>
             </div>
@@ -90,14 +93,14 @@ export const ServerSidebar: React.FC = () => {
 
         {/* Tooltip */}
         {hoveredServerId === 'home' && (
-          <div className="absolute left-[76px] bg-[#1A1D23] text-[#F8FAFC] border border-[#2C313C] text-xs font-semibold px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-2xl z-50 pointer-events-none animate-in fade-in">
+          <div className="absolute left-[76px] bg-white dark:bg-[#1A1D23] text-slate-800 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#2C313C] text-xs font-semibold px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-xl z-50 pointer-events-none animate-in fade-in">
             Mensagens Diretas
           </div>
         )}
       </div>
 
       {/* Separator */}
-      <div className="w-7 h-[1px] bg-[#22262E] my-0.5" />
+      <div className={`w-7 h-[1px] my-0.5 ${theme === 'light' ? 'bg-slate-300' : 'bg-[#22262E]'}`} />
 
       {/* Server List */}
       <div className="flex-1 w-full space-y-2 overflow-y-auto overflow-x-hidden no-scrollbar flex flex-col items-center">

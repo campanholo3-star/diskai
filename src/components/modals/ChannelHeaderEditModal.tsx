@@ -106,22 +106,22 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
     >
       <div className={`w-full max-w-xl rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh] transition-colors ${
         theme === 'light'
-          ? 'bg-white border-2 border-black text-black'
+          ? 'bg-white border border-slate-200 text-slate-900 shadow-2xl'
           : 'bg-[#313338] border border-[#3e4047] text-[#dbdee1]'
       }`}>
         {/* Header */}
         <div className={`px-6 py-4 border-b flex items-center justify-between ${
-          theme === 'light' ? 'bg-slate-50 border-black/20' : 'bg-[#2b2d31] border-[#1f2023]'
+          theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#2b2d31] border-[#1f2023]'
         }`}>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#5865F2]/20 flex items-center justify-center text-[#5865F2]">
               <ImageIcon className="w-4 h-4" />
             </div>
             <div>
-              <h3 className={`text-sm font-bold ${theme === 'light' ? 'text-black' : 'text-white'}`}>
+              <h3 className={`text-sm font-bold ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
                 Editar Cabeçalho do Canal #{channel.name}
               </h3>
-              <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>
+              <p className={`text-[11px] ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>
                 Configure a capa, descrição/bibliografia e links seguros de contato
               </p>
             </div>
@@ -129,7 +129,7 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
           <button
             onClick={onClose}
             className={`p-1.5 rounded-lg transition-colors ${
-              theme === 'light' ? 'hover:bg-slate-200 text-black' : 'hover:bg-[#35373c] text-[#949ba4] hover:text-white'
+              theme === 'light' ? 'hover:bg-slate-200 text-slate-700' : 'hover:bg-[#35373c] text-[#949ba4] hover:text-white'
             }`}
           >
             <X className="w-4 h-4" />
@@ -150,7 +150,7 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
             </p>
 
             {coverUrl && (
-              <div className="w-full h-28 rounded-xl overflow-hidden border border-black/20 relative group">
+              <div className="w-full h-28 rounded-xl overflow-hidden border border-slate-200 relative group">
                 <img src={coverUrl} alt="Prévia da Capa" className="w-full h-full object-cover" />
                 <button
                   type="button"
@@ -171,7 +171,7 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
                 placeholder="Cole o link da imagem de capa (URL)..."
                 className={`flex-1 text-xs px-3.5 py-2.5 rounded-xl border focus:outline-none transition-colors ${
                   theme === 'light'
-                    ? 'bg-slate-50 border-2 border-black text-black placeholder:text-slate-500'
+                    ? 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#16B99A]'
                     : 'bg-[#1e1f22] border-[#3e4047] text-white focus:border-[#5865F2]'
                 }`}
               />
@@ -180,7 +180,7 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
                 onClick={() => fileInputRef.current?.click()}
                 className={`px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors ${
                   theme === 'light'
-                    ? 'bg-slate-100 hover:bg-slate-200 border-2 border-black text-black'
+                    ? 'bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800'
                     : 'bg-[#2b2d31] hover:bg-[#35373c] text-white border border-[#3e4047]'
                 }`}
               >
@@ -207,7 +207,7 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
                     key={i}
                     type="button"
                     onClick={() => setCoverUrl(preset)}
-                    className="h-10 rounded-lg overflow-hidden border border-black/20 hover:scale-105 active:scale-95 transition-transform"
+                    className="h-10 rounded-lg overflow-hidden border border-slate-200 hover:scale-105 active:scale-95 transition-transform"
                   >
                     <img src={preset} alt="" className="w-full h-full object-cover" />
                   </button>
@@ -219,11 +219,11 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
           {/* Bibliografia / Descrição do Canal */}
           <div className="space-y-1.5">
             <label className={`text-xs font-bold uppercase tracking-wider block ${
-              theme === 'light' ? 'text-black' : 'text-[#dbdee1]'
+              theme === 'light' ? 'text-slate-900' : 'text-[#dbdee1]'
             }`}>
               Bibliografia & Descrição do Canal
             </label>
-            <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>
+            <p className={`text-[11px] ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>
               Ficará visível no início do canal para orientar e contextualizar todos os membros.
             </p>
             <textarea
@@ -233,24 +233,24 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
               placeholder="Descreva o propósito deste canal, regras essenciais, equipe responsável..."
               className={`w-full text-xs p-3 rounded-xl border focus:outline-none transition-colors leading-relaxed ${
                 theme === 'light'
-                  ? 'bg-slate-50 border-2 border-black text-black placeholder:text-slate-500'
+                  ? 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#16B99A]'
                   : 'bg-[#1e1f22] border-[#3e4047] text-white focus:border-[#5865F2]'
               }`}
             />
           </div>
 
           {/* Links e E-mails Seguros (Ocultos sob o botão '+ Mais') */}
-          <div className="space-y-3 pt-2 border-t border-black/10">
+          <div className={`space-y-3 pt-2 border-t ${theme === 'light' ? 'border-slate-200' : 'border-white/10'}`}>
             <div>
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#23a55a]" />
                 <label className={`text-xs font-bold uppercase tracking-wider ${
-                  theme === 'light' ? 'text-black' : 'text-[#dbdee1]'
+                  theme === 'light' ? 'text-slate-900' : 'text-[#dbdee1]'
                 }`}>
                   Links & Contatos Oficiais (Verificados & Seguros)
                 </label>
               </div>
-              <p className={`text-[11px] mt-0.5 ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>
+              <p className={`text-[11px] mt-0.5 ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>
                 Ficarão ocultos por padrão para manter a tela limpa, aparecendo somente quando o usuário clicar no botão <strong>+ Mais</strong>.
               </p>
             </div>
@@ -263,7 +263,7 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
                     key={link.id}
                     className={`flex items-center justify-between p-2.5 rounded-xl border ${
                       theme === 'light'
-                        ? 'bg-slate-50 border border-black/30 text-black'
+                        ? 'bg-slate-50 border-slate-200 text-slate-900'
                         : 'bg-[#1e1f22] border-[#3e4047] text-[#dbdee1]'
                     }`}
                   >
@@ -299,7 +299,7 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
                   placeholder="Nome do link (ex: E-mail Suporte)"
                   className={`text-xs px-3 py-2 rounded-xl border focus:outline-none ${
                     theme === 'light'
-                      ? 'bg-slate-50 border-2 border-black text-black placeholder:text-slate-500'
+                      ? 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#16B99A]'
                       : 'bg-[#1e1f22] border-[#3e4047] text-white focus:border-[#5865F2]'
                   }`}
                 />
@@ -310,7 +310,7 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
                   placeholder="Endereço (ex: contato@empresa.com ou https://...)"
                   className={`text-xs px-3 py-2 rounded-xl border focus:outline-none ${
                     theme === 'light'
-                      ? 'bg-slate-50 border-2 border-black text-black placeholder:text-slate-500'
+                      ? 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#16B99A]'
                       : 'bg-[#1e1f22] border-[#3e4047] text-white focus:border-[#5865F2]'
                   }`}
                 />
@@ -344,7 +344,7 @@ export const ChannelHeaderEditModal: React.FC<ChannelHeaderEditModalProps> = ({
 
         {/* Footer Actions */}
         <div className={`px-6 py-3.5 border-t flex items-center justify-end gap-2.5 ${
-          theme === 'light' ? 'bg-slate-50 border-black/20' : 'bg-[#2b2d31] border-[#1f2023]'
+          theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#2b2d31] border-[#1f2023]'
         }`}>
           <button
             type="button"

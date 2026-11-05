@@ -93,26 +93,32 @@ export const DirectSidebar: React.FC = () => {
   return (
     <div className={`w-60 flex flex-col h-full select-none flex-shrink-0 z-10 border-r transition-colors ${
       theme === 'light'
-        ? 'bg-white border-black/20 text-black'
+        ? 'bg-white border-slate-200 text-slate-900'
         : 'bg-[#1A1D23] border-[#22262E] text-[#F8FAFC]'
     }`}>
       {/* Top Search bar input */}
       <div className={`h-12 border-b px-3 flex items-center ${
-        theme === 'light' ? 'border-black/20' : 'border-[#22262E]'
+        theme === 'light' ? 'border-slate-200' : 'border-[#22262E]'
       }`}>
-        <div className="w-full bg-[#131519] text-[#F8FAFC] text-xs font-medium px-2.5 py-1.5 rounded-lg flex items-center gap-2 border border-[#2C313C] focus-within:border-[#16B99A] transition-colors">
-          <Search className="w-3.5 h-3.5 text-[#94A3B8] flex-shrink-0" />
+        <div className={`w-full text-xs font-medium px-2.5 py-1.5 rounded-lg flex items-center gap-2 border transition-colors ${
+          theme === 'light'
+            ? 'bg-slate-50 border-slate-200 text-slate-900 focus-within:border-[#16B99A] focus-within:bg-white'
+            : 'bg-[#131519] border-[#2C313C] text-[#F8FAFC] focus-within:border-[#16B99A]'
+        }`}>
+          <Search className={`w-3.5 h-3.5 flex-shrink-0 ${theme === 'light' ? 'text-slate-400' : 'text-[#94A3B8]'}`} />
           <input
             type="text"
             value={sidebarSearch}
             onChange={e => setSidebarSearch(e.target.value)}
             placeholder="Buscar conversa ou amigo..."
-            className="w-full bg-transparent text-xs text-white focus:outline-none placeholder:text-[#64748B]"
+            className={`w-full bg-transparent text-xs focus:outline-none ${
+              theme === 'light' ? 'text-slate-900 placeholder:text-slate-400' : 'text-white placeholder:text-[#64748B]'
+            }`}
           />
           {sidebarSearch && (
             <button
               onClick={() => setSidebarSearch('')}
-              className="text-[#94A3B8] hover:text-white"
+              className={`${theme === 'light' ? 'text-slate-400 hover:text-slate-700' : 'text-[#94A3B8] hover:text-white'}`}
             >
               <X className="w-3 h-3" />
             </button>
@@ -317,7 +323,7 @@ export const DirectSidebar: React.FC = () => {
       {/* User Profile Bar */}
       <div className={`h-[54px] px-2.5 flex items-center justify-between select-none transition-colors ${
         theme === 'light'
-          ? 'bg-white border-t-2 border-black text-black'
+          ? 'bg-slate-50 border-t border-slate-200 text-slate-900'
           : 'bg-[#131519] border-t border-[#22262E]'
       }`}>
         <div
@@ -330,7 +336,7 @@ export const DirectSidebar: React.FC = () => {
             <img
               src={currentUser.avatar}
               alt={currentUser.name}
-              className={`w-8 h-8 rounded-lg object-cover ${theme === 'light' ? 'border border-black/20' : 'ring-1 ring-white/10'}`}
+              className={`w-8 h-8 rounded-lg object-cover ${theme === 'light' ? 'border border-slate-200' : 'ring-1 ring-white/10'}`}
             />
             <div
               className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ${
@@ -360,7 +366,7 @@ export const DirectSidebar: React.FC = () => {
           </div>
         </div>
 
-        <div className={`flex items-center gap-1 ${theme === 'light' ? 'text-black' : 'text-[#94A3B8]'}`}>
+        <div className={`flex items-center gap-1 ${theme === 'light' ? 'text-slate-700' : 'text-[#94A3B8]'}`}>
           <button
             onClick={toggleMute}
             title={isMuted ? 'Desativar Mudo' : 'Ativar Mudo'}
@@ -368,7 +374,7 @@ export const DirectSidebar: React.FC = () => {
               isMuted
                 ? 'bg-[#EF4444]/15 border-[#EF4444]/40 text-[#EF4444] shadow-sm'
                 : theme === 'light'
-                ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black'
+                ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
                 : 'bg-white/[0.03] hover:bg-white/[0.08] border-[#2C313C] text-[#94A3B8] hover:text-white'
             }`}
           >
@@ -381,7 +387,7 @@ export const DirectSidebar: React.FC = () => {
               isDeafened
                 ? 'bg-[#EF4444]/15 border-[#EF4444]/40 text-[#EF4444] shadow-sm'
                 : theme === 'light'
-                ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black'
+                ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
                 : 'bg-white/[0.03] hover:bg-white/[0.08] border-[#2C313C] text-[#94A3B8] hover:text-white'
             }`}
           >
@@ -392,7 +398,7 @@ export const DirectSidebar: React.FC = () => {
             title="Configurações de Usuário & IA"
             className={`p-1.5 rounded-lg border transition-all duration-200 group ${
               theme === 'light'
-                ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black'
+                ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
                 : 'bg-white/[0.03] hover:bg-white/[0.08] border-[#2C313C] text-[#94A3B8] hover:text-white'
             }`}
           >
@@ -407,7 +413,7 @@ export const DirectSidebar: React.FC = () => {
             title="Sair da Conta (Logout)"
             className={`p-1.5 rounded-lg border transition-all duration-200 ${
               theme === 'light'
-                ? 'bg-rose-50 hover:bg-rose-100 border-black/20 text-rose-700'
+                ? 'bg-rose-50 hover:bg-rose-100 border-slate-200 text-rose-700'
                 : 'bg-white/[0.03] hover:bg-[#EF4444]/15 border-[#2C313C] hover:border-[#EF4444]/30 text-[#94A3B8] hover:text-[#EF4444]'
             }`}
           >

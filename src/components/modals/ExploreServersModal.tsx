@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { useDiskai } from '../../context/DiskaiContext';
 import { ViralTrendsView } from '../viral/ViralTrendsView';
+import { isViralV3Enabled } from '../../config/viralFlags';
+import { ViralTrendsViewV3 } from '../viral/v3/ViralTrendsViewV3';
 
 type CommunityCategory =
   | 'Início'
@@ -451,10 +453,17 @@ const ExploreServersDialog: React.FC = () => {
         {/* ===================================================================== */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
           {activeDiscoverTab === 'virais' ? (
-            <ViralTrendsView
-              onBackToServers={() => setActiveDiscoverTab('servers')}
-              onClose={() => setExploreModalOpen(false)}
-            />
+            isViralV3Enabled() ? (
+              <ViralTrendsViewV3
+                onBackToServers={() => setActiveDiscoverTab('servers')}
+                onClose={() => setExploreModalOpen(false)}
+              />
+            ) : (
+              <ViralTrendsView
+                onBackToServers={() => setActiveDiscoverTab('servers')}
+                onClose={() => setExploreModalOpen(false)}
+              />
+            )
           ) : (
             <div className="flex-1 flex flex-col h-full overflow-hidden">
               {/* ===================================================================== */}

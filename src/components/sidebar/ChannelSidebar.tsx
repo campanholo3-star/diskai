@@ -111,7 +111,7 @@ export const ChannelSidebar: React.FC = () => {
   return (
     <div className={`w-60 flex flex-col h-full select-none flex-shrink-0 z-10 border-r transition-colors ${
       theme === 'light'
-        ? 'bg-white border-black/20 text-black'
+        ? 'bg-white border-slate-200 text-slate-900'
         : 'bg-[#1A1D23] border-[#22262E] text-[#F8FAFC]'
     }`}>
       {/* Server Header Dropdown */}
@@ -120,7 +120,7 @@ export const ChannelSidebar: React.FC = () => {
           onClick={() => setServerMenuOpen(prev => !prev)}
           className={`h-12 border-b px-3.5 flex items-center justify-between font-bold transition-colors cursor-pointer ${
             theme === 'light'
-              ? 'border-black/20 text-black hover:bg-slate-100'
+              ? 'border-slate-200 text-slate-900 hover:bg-slate-100'
               : 'border-[#22262E] text-white hover:bg-[#20242A]'
           }`}
         >
@@ -147,7 +147,7 @@ export const ChannelSidebar: React.FC = () => {
               title="Configurações do Servidor"
               className={`p-1 rounded-lg border transition-all hover:scale-110 active:scale-95 ${
                 theme === 'light'
-                  ? 'bg-slate-100 hover:bg-slate-200 text-black border-black/20'
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
                   : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#94A3B8] hover:text-white border-[#2C313C]'
               }`}
             >
@@ -165,7 +165,7 @@ export const ChannelSidebar: React.FC = () => {
               title="Adicionar Pessoas ao Servidor"
               className={`p-1 rounded-lg border transition-all hover:scale-110 active:scale-95 ${
                 theme === 'light'
-                  ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-black/20'
+                  ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-slate-200'
                   : 'bg-[#16B99A]/10 hover:bg-[#16B99A]/20 text-[#16B99A] hover:text-white border-[#16B99A]/30'
               }`}
             >
@@ -241,7 +241,7 @@ export const ChannelSidebar: React.FC = () => {
             }}
             className={`w-full p-2.5 rounded-xl flex items-center gap-2.5 transition-all group text-left ${
               theme === 'light'
-                ? 'bg-indigo-50/80 hover:bg-indigo-100 border-2 border-black text-black shadow-sm'
+                ? 'bg-indigo-50/80 hover:bg-indigo-100 border border-slate-200 text-slate-900 shadow-sm'
                 : 'bg-gradient-to-r from-[#16B99A]/10 to-[#0EA5E9]/10 hover:from-[#16B99A]/20 hover:to-[#0EA5E9]/20 border border-[#16B99A]/20 hover:border-[#16B99A]/40'
             }`}
           >
@@ -253,13 +253,13 @@ export const ChannelSidebar: React.FC = () => {
               <Sparkles className="w-4 h-4" />
             </div>
             <div className="overflow-hidden">
-              <div className={`text-xs font-bold flex items-center gap-1.5 ${theme === 'light' ? 'text-black' : 'text-white'}`}>
+              <div className={`text-xs font-bold flex items-center gap-1.5 ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
                 Diskai AI Studio
                 <span className="text-[9px] bg-[#16B99A] text-[#131519] px-1.5 py-0.2 rounded-full font-bold">
                   {summaries.length}
                 </span>
               </div>
-              <div className={`text-[11px] truncate ${theme === 'light' ? 'text-slate-600' : 'text-[#94A3B8]'}`}>
+              <div className={`text-[11px] truncate ${theme === 'light' ? 'text-slate-500' : 'text-[#94A3B8]'}`}>
                 Atas & Gravações com IA
               </div>
             </div>
@@ -270,7 +270,7 @@ export const ChannelSidebar: React.FC = () => {
             onClick={() => setMacawModalOpen(true)}
             className={`w-full p-2.5 rounded-xl flex items-center gap-2.5 transition-all group text-left ${
               theme === 'light'
-                ? 'bg-sky-50/80 hover:bg-sky-100 border-2 border-black text-black shadow-sm'
+                ? 'bg-sky-50/80 hover:bg-sky-100 border border-slate-200 text-slate-900 shadow-sm'
                 : 'bg-gradient-to-r from-[#0284c7]/15 to-[#38bdf8]/10 hover:from-[#0284c7]/25 hover:to-[#38bdf8]/20 border border-[#38bdf8]/20 hover:border-[#38bdf8]/40'
             }`}
           >
@@ -282,7 +282,7 @@ export const ChannelSidebar: React.FC = () => {
               <img src="/arara-mascote.png" alt="Arara" className="w-6 h-6 object-contain" />
             </div>
             <div className="overflow-hidden flex-1">
-              <div className={`text-xs font-bold flex items-center justify-between ${theme === 'light' ? 'text-black' : 'text-white'}`}>
+              <div className={`text-xs font-bold flex items-center justify-between ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
                 <span>Arara Assistente</span>
                 <span className="text-[9px] bg-[#0284c7] text-white px-1.5 py-0.5 rounded-full font-bold">
                   {appointments.length} eventos
@@ -508,7 +508,7 @@ export const ChannelSidebar: React.FC = () => {
       {/* User Profile Bar */}
       <div className={`h-[54px] px-2.5 flex items-center justify-between select-none transition-colors ${
         theme === 'light'
-          ? 'bg-white border-t-2 border-black text-black'
+          ? 'bg-slate-50 border-t border-slate-200 text-slate-900'
           : 'bg-[#131519] border-t border-[#22262E]'
       }`}>
         {/* Avatar & Name */}
@@ -522,7 +522,7 @@ export const ChannelSidebar: React.FC = () => {
             <img
               src={currentUser.avatar}
               alt={currentUser.name}
-              className={`w-8 h-8 rounded-lg object-cover ${theme === 'light' ? 'border border-black/20' : 'ring-1 ring-white/10'}`}
+              className={`w-8 h-8 rounded-lg object-cover ${theme === 'light' ? 'border border-slate-200' : 'ring-1 ring-white/10'}`}
             />
             <div
               className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ${
@@ -540,12 +540,12 @@ export const ChannelSidebar: React.FC = () => {
           </div>
           <div className="truncate">
             <div className={`text-xs font-semibold leading-tight truncate ${
-              theme === 'light' ? 'text-black font-bold' : 'text-white'
+              theme === 'light' ? 'text-slate-900 font-bold' : 'text-white'
             }`}>
               {currentUser.name}
             </div>
             <div className={`text-[10px] leading-tight ${
-              theme === 'light' ? 'text-slate-600' : 'text-[#94A3B8]'
+              theme === 'light' ? 'text-slate-500' : 'text-[#94A3B8]'
             }`}>
               #{currentUser.tag}
             </div>
@@ -553,7 +553,7 @@ export const ChannelSidebar: React.FC = () => {
         </div>
 
         {/* Audio / Settings Control Icons */}
-        <div className={`flex items-center gap-1 ${theme === 'light' ? 'text-black' : 'text-[#94A3B8]'}`}>
+        <div className={`flex items-center gap-1 ${theme === 'light' ? 'text-slate-700' : 'text-[#94A3B8]'}`}>
           <button
             onClick={toggleMute}
             title={isMuted ? 'Desativar Mudo' : 'Ativar Mudo'}
@@ -561,7 +561,7 @@ export const ChannelSidebar: React.FC = () => {
               isMuted
                 ? 'bg-[#EF4444]/15 border-[#EF4444]/40 text-[#EF4444] shadow-sm'
                 : theme === 'light'
-                ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black'
+                ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
                 : 'bg-white/[0.03] hover:bg-white/[0.08] border-[#2C313C] text-[#94A3B8] hover:text-white'
             }`}
           >
@@ -574,7 +574,7 @@ export const ChannelSidebar: React.FC = () => {
               isDeafened
                 ? 'bg-[#EF4444]/15 border-[#EF4444]/40 text-[#EF4444] shadow-sm'
                 : theme === 'light'
-                ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black'
+                ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
                 : 'bg-white/[0.03] hover:bg-white/[0.08] border-[#2C313C] text-[#94A3B8] hover:text-white'
             }`}
           >
@@ -585,7 +585,7 @@ export const ChannelSidebar: React.FC = () => {
             title="Configurações de Usuário & IA"
             className={`p-1.5 rounded-lg border transition-all duration-200 group ${
               theme === 'light'
-                ? 'bg-slate-100 hover:bg-slate-200 border-black/20 text-black'
+                ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
                 : 'bg-white/[0.03] hover:bg-white/[0.08] border-[#2C313C] text-[#94A3B8] hover:text-white'
             }`}
           >
@@ -600,7 +600,7 @@ export const ChannelSidebar: React.FC = () => {
             title="Sair da Conta (Logout)"
             className={`p-1.5 rounded-lg border transition-all duration-200 ${
               theme === 'light'
-                ? 'bg-rose-50 hover:bg-rose-100 border-black/20 text-rose-700'
+                ? 'bg-rose-50 hover:bg-rose-100 border-slate-200 text-rose-700'
                 : 'bg-white/[0.03] hover:bg-[#EF4444]/15 border-[#2C313C] hover:border-[#EF4444]/30 text-[#94A3B8] hover:text-[#EF4444]'
             }`}
           >

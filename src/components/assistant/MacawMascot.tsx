@@ -368,6 +368,21 @@ export const MacawMascot: React.FC = () => {
     }
   };
 
+  // Escuta comandos de voz nativos (Ctrl + Espaço) e encaminha ao pipeline do Gemini
+  useEffect(() => {
+    const handleVoiceCommand = (e: any) => {
+      const text = e.detail?.text;
+      if (text && typeof text === 'string') {
+        setMacawModalOpen(true);
+        setActiveTab('chat');
+        handleSendMessage(text);
+      }
+    };
+
+    window.addEventListener('diskai-voice-transcript', handleVoiceCommand);
+    return () => window.removeEventListener('diskai-voice-transcript', handleVoiceCommand);
+  }, [handleSendMessage, setMacawModalOpen]);
+
   const handleToggleAppointment = async (id: string) => {
     triggerGesture('ARARA_SUCCESS', ['ARARA_SUCCESS', 'ARARA_IDLE_LOOP']);
     await toggleAppointmentStatus(id);
@@ -508,14 +523,14 @@ export const MacawMascot: React.FC = () => {
             transition={{ type: 'spring', damping: 26, stiffness: 320 }}
             className={`fixed bottom-[185px] left-3 right-3 sm:left-auto sm:bottom-[20px] sm:right-[180px] md:right-[195px] z-50 pointer-events-auto w-[calc(100vw-24px)] sm:w-[430px] md:w-[460px] h-[540px] max-h-[calc(100vh-210px)] sm:max-h-[calc(100vh-100px)] min-h-[320px] rounded-3xl shadow-2xl flex flex-col overflow-hidden font-sans border transition-colors ${
               theme === 'light'
-                ? 'bg-white text-black border-2 border-black shadow-[0_16px_40px_rgba(0,0,0,0.2)]'
-                : 'bg-[#1a1b1e]/95 backdrop-blur-2xl border border-white/[0.12] text-[#dbdee1] shadow-[0_20px_50px_rgba(0,0,0,0.6)]'
+                ? 'bg-white text-slate-900 border-slate-200 shadow-2xl'
+                : 'bg-[#1a1b1e]/95 backdrop-blur-2xl border-white/[0.12] text-[#dbdee1] shadow-[0_20px_50px_rgba(0,0,0,0.6)]'
             }`}
           >
             {/* Header limpo (sem a identificação textual "Arara Assistente" conforme requisito 2) */}
             <div className={`px-4 py-3 flex items-center justify-between flex-shrink-0 border-b ${
               theme === 'light'
-                ? 'bg-sky-50 border-black/20'
+                ? 'bg-sky-50 border-sky-100'
                 : 'bg-gradient-to-r from-[#0ea5e9]/20 via-[#0284c7]/20 to-[#38bdf8]/10 border-white/[0.08]'
             }`}>
               <div className="flex items-center gap-2.5">
@@ -848,7 +863,7 @@ export const MacawMascot: React.FC = () => {
                     }
                     className={`flex-1 rounded-xl px-3.5 py-2 text-xs focus:outline-none transition-colors ${
                       theme === 'light'
-                        ? 'bg-white text-black border-2 border-black placeholder-slate-500 focus:border-[#0284c7]'
+                        ? 'bg-slate-50 text-slate-900 border border-slate-200 placeholder:text-slate-400 focus:border-[#0284c7]'
                         : 'bg-[#1e1f22] border border-white/[0.1] text-white placeholder-[#80848e] focus:border-[#38bdf8]'
                     }`}
                   />
@@ -932,7 +947,7 @@ export const MacawMascot: React.FC = () => {
                       onChange={(e) => setNewAppTitle(e.target.value)}
                       className={`w-full rounded-xl px-3 py-1.5 text-xs focus:outline-none transition-colors ${
                         theme === 'light'
-                          ? 'bg-white text-black border-2 border-black placeholder-slate-500 focus:border-[#0284c7]'
+                          ? 'bg-slate-50 text-slate-900 border border-slate-200 placeholder:text-slate-400 focus:border-[#0284c7]'
                           : 'bg-[#1e1f22] border border-white/[0.1] text-white placeholder-[#80848e] focus:border-[#38bdf8]'
                       }`}
                       autoFocus
@@ -945,7 +960,7 @@ export const MacawMascot: React.FC = () => {
                         onChange={(e) => setNewAppDate(e.target.value)}
                         className={`rounded-xl px-2 py-1 text-xs focus:outline-none transition-colors ${
                           theme === 'light'
-                            ? 'bg-white text-black border-2 border-black'
+                            ? 'bg-slate-50 text-slate-900 border border-slate-200'
                             : 'bg-[#1e1f22] border border-white/[0.1] text-white focus:border-[#38bdf8]'
                         }`}
                       />
@@ -955,7 +970,7 @@ export const MacawMascot: React.FC = () => {
                         onChange={(e) => setNewAppTime(e.target.value)}
                         className={`rounded-xl px-2 py-1 text-xs focus:outline-none transition-colors ${
                           theme === 'light'
-                            ? 'bg-white text-black border-2 border-black'
+                            ? 'bg-slate-50 text-slate-900 border border-slate-200'
                             : 'bg-[#1e1f22] border border-white/[0.1] text-white focus:border-[#38bdf8]'
                         }`}
                       />
@@ -972,7 +987,7 @@ export const MacawMascot: React.FC = () => {
                         onChange={(e) => setTargetChannelId(e.target.value)}
                         className={`w-full rounded-xl px-2.5 py-1.5 text-xs focus:outline-none transition-colors ${
                           theme === 'light'
-                            ? 'bg-white text-black border-2 border-black'
+                            ? 'bg-slate-50 text-slate-900 border border-slate-200'
                             : 'bg-[#1e1f22] border border-white/[0.1] text-white focus:border-[#38bdf8]'
                         }`}
                       >
@@ -1264,9 +1279,9 @@ export const MacawMascot: React.FC = () => {
           {!macawModalOpen && (
             <div
               onClick={handleMascotClick}
-              className={`absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20 px-3 py-1.5 rounded-xl shadow-2xl text-[11px] font-extrabold whitespace-nowrap flex items-center gap-1.5 transform translate-y-1 group-hover:translate-y-0 cursor-pointer ${
+              className={`absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20 px-3 py-1.5 rounded-xl shadow-2xl text-[11px] font-semibold whitespace-nowrap flex items-center gap-1.5 transform translate-y-1 group-hover:translate-y-0 cursor-pointer ${
                 theme === 'light'
-                  ? 'bg-white text-black border-2 border-black shadow-[0_4px_14px_rgba(0,0,0,0.15)]'
+                  ? 'bg-white text-slate-800 border border-slate-200 shadow-md'
                   : 'bg-[#141517]/95 text-white border border-white/[0.12] backdrop-blur-md'
               }`}
             >

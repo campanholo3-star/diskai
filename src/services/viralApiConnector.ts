@@ -22,6 +22,8 @@ import {
   toggleFavoriteViralVideo
 } from './viralTrendsService';
 import { getSupabaseClient } from './supabase';
+import { isViralV3Enabled } from '../config/viralFlags';
+import { searchAndAnalyzeViralTrendsV3 } from './viralApiConnectorV3';
 
 export interface ViralSearchInput {
   query?: string;
@@ -296,6 +298,11 @@ export async function searchAndAnalyzeViralTrends(
       savedToSupabase: false,
       newlyFetchedCount: demoVideos.length
     };
+  }
+
+  // Desvio cirúrgico da v3 aprovado no Mapa de Alterações (Item 2)
+  if (isViralV3Enabled()) {
+    return searchAndAnalyzeViralTrendsV3(input) as any;
   }
 
   // 2. Chamada à Supabase Edge Function `viral-analyzer`

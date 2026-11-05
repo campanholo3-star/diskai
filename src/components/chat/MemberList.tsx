@@ -59,8 +59,8 @@ export const MemberList: React.FC = () => {
         className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer group transition-colors ${
           theme === 'light'
             ? isSelected
-              ? 'bg-slate-200 border border-black shadow-sm'
-              : 'hover:bg-slate-200/80'
+              ? 'bg-slate-100 border border-slate-300 shadow-xs'
+              : 'hover:bg-slate-100'
             : isSelected
             ? 'bg-[#22262E] text-white border-l-2 border-[#16B99A] pl-1.5'
             : 'hover:bg-[#20242A]'
@@ -70,7 +70,7 @@ export const MemberList: React.FC = () => {
           <img
             src={user.avatar}
             alt={user.name}
-            className={`w-8 h-8 rounded-lg object-cover ${theme === 'light' ? 'border border-black/20' : 'ring-1 ring-white/10'}`}
+            className={`w-8 h-8 rounded-lg object-cover ${theme === 'light' ? 'border border-slate-200' : 'ring-1 ring-white/10'}`}
           />
           <div
             className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ${
@@ -91,11 +91,11 @@ export const MemberList: React.FC = () => {
             <span
               className={`text-xs font-semibold truncate ${
                 user.role === 'Administrador'
-                  ? theme === 'light' ? 'text-amber-800 font-bold' : 'text-[#F59E0B]'
+                  ? theme === 'light' ? 'text-amber-700 font-bold' : 'text-[#F59E0B]'
                   : user.isBot
                   ? theme === 'light' ? 'text-indigo-700 font-bold' : 'text-[#16B99A]'
                   : theme === 'light'
-                  ? 'text-black group-hover:text-black font-semibold'
+                  ? 'text-slate-900 group-hover:text-slate-900 font-semibold'
                   : 'text-[#F8FAFC] group-hover:text-white'
               }`}
             >
@@ -141,7 +141,7 @@ export const MemberList: React.FC = () => {
     <>
       <div className={`w-60 hidden lg:flex flex-col h-full select-none flex-shrink-0 border-l p-3.5 space-y-4 overflow-y-auto no-scrollbar transition-colors ${
         theme === 'light'
-          ? 'bg-white border-black/20 text-black'
+          ? 'bg-white border-slate-200 text-slate-900'
           : 'bg-[#1A1D23] border-[#22262E] text-[#F8FAFC]'
       }`}>
         {/* Quick Invite Button */}
@@ -152,7 +152,7 @@ export const MemberList: React.FC = () => {
           }}
           className={`w-full py-2 px-3 rounded-lg font-semibold text-xs flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 ${
             theme === 'light'
-              ? 'bg-white hover:bg-slate-50 text-black border-2 border-black shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+              ? 'bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 shadow-xs'
               : 'bg-[#16B99A]/10 hover:bg-[#16B99A]/20 text-[#16B99A] border border-[#16B99A]/30 hover:border-[#16B99A]/60'
           }`}
         >
@@ -164,7 +164,7 @@ export const MemberList: React.FC = () => {
         {admins.length > 0 && (
           <div className="space-y-1">
             <div className={`text-[11px] font-bold tracking-wider uppercase px-2 ${
-              theme === 'light' ? 'text-black' : 'text-[#949ba4]'
+              theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'
             }`}>
               Administradores — {admins.length}
             </div>
@@ -176,7 +176,7 @@ export const MemberList: React.FC = () => {
         {bots.length > 0 && (
           <div className="space-y-1">
             <div className={`text-[11px] font-bold tracking-wider uppercase px-2 flex items-center gap-1 ${
-              theme === 'light' ? 'text-black' : 'text-[#949ba4]'
+              theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'
             }`}>
               Diskai IA & Bots — {bots.length}
             </div>
@@ -188,7 +188,7 @@ export const MemberList: React.FC = () => {
         {onlineMembers.length > 0 && (
           <div className="space-y-1">
             <div className={`text-[11px] font-bold tracking-wider uppercase px-2 ${
-              theme === 'light' ? 'text-black' : 'text-[#949ba4]'
+              theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'
             }`}>
               Disponíveis — {onlineMembers.length}
             </div>
@@ -200,7 +200,7 @@ export const MemberList: React.FC = () => {
         {offlineMembers.length > 0 && (
           <div className="space-y-1">
             <div className={`text-[11px] font-bold tracking-wider uppercase px-2 ${
-              theme === 'light' ? 'text-black' : 'text-[#949ba4]'
+              theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'
             }`}>
               Offline — {offlineMembers.length}
             </div>
@@ -214,26 +214,26 @@ export const MemberList: React.FC = () => {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div className={`rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl transition-colors ${
             theme === 'light'
-              ? 'bg-white border-2 border-black text-black'
+              ? 'bg-white border border-slate-200 text-slate-900 shadow-xl'
               : 'bg-[#2b2d31] border border-[#f23f43]/40 text-[#dbdee1]'
           }`}>
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                 theme === 'light'
-                  ? 'bg-rose-100 border-2 border-black text-rose-700'
+                  ? 'bg-rose-50 border border-rose-200 text-rose-600'
                   : 'bg-[#f23f43]/20 border border-[#f23f43]/30 text-[#f23f43]'
               }`}>
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className={`text-sm font-bold ${theme === 'light' ? 'text-black' : 'text-white'}`}>Remover do Servidor?</h3>
-                <p className={`text-xs ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>Deseja excluir este membro?</p>
+                <h3 className={`text-sm font-bold ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>Remover do Servidor?</h3>
+                <p className={`text-xs ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>Deseja excluir este membro?</p>
               </div>
             </div>
 
             <div className={`p-2.5 rounded-xl flex items-center gap-3 ${
               theme === 'light'
-                ? 'bg-slate-100 border-2 border-black text-black'
+                ? 'bg-slate-50 border border-slate-200 text-slate-900'
                 : 'bg-[#1e1f22] border border-[#3e4047]'
             }`}>
               <img
@@ -242,24 +242,24 @@ export const MemberList: React.FC = () => {
                 className="w-8 h-8 rounded-full object-cover"
               />
               <div className="truncate">
-                <div className={`text-xs font-bold truncate ${theme === 'light' ? 'text-black' : 'text-white'}`}>{confirmRemoveUser.name}</div>
-                <div className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>#{confirmRemoveUser.tag}</div>
+                <div className={`text-xs font-bold truncate ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>{confirmRemoveUser.name}</div>
+                <div className={`text-[11px] ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>#{confirmRemoveUser.tag}</div>
               </div>
             </div>
 
-            <p className={`text-xs leading-relaxed ${theme === 'light' ? 'text-slate-800' : 'text-[#dbdee1]'}`}>
+            <p className={`text-xs leading-relaxed ${theme === 'light' ? 'text-slate-700' : 'text-[#dbdee1]'}`}>
               Deseja remover <strong>{confirmRemoveUser.name}</strong> do servidor <strong>{activeServer.name}</strong>?
             </p>
 
             <div className={`flex items-center justify-end gap-2 pt-2 border-t ${
-              theme === 'light' ? 'border-black/20' : 'border-[#3e4047]'
+              theme === 'light' ? 'border-slate-200' : 'border-[#3e4047]'
             }`}>
               <button
                 type="button"
                 onClick={() => setConfirmRemoveUser(null)}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border ${
                   theme === 'light'
-                    ? 'bg-slate-100 hover:bg-slate-200 text-black border-black/30'
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
                     : 'bg-[#1e1f22] hover:bg-[#35373c] text-white border-[#3e4047]'
                 }`}
               >
@@ -273,7 +273,7 @@ export const MemberList: React.FC = () => {
                 }}
                 className={`px-3 py-1.5 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow ${
                   theme === 'light'
-                    ? 'bg-rose-600 hover:bg-rose-700 border-2 border-black'
+                    ? 'bg-rose-600 hover:bg-rose-700 shadow-sm'
                     : 'bg-[#f23f43] hover:bg-[#da373c]'
                 }`}
               >

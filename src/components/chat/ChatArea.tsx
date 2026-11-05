@@ -7,6 +7,7 @@ import {
   Search,
   PlusCircle,
   Smile,
+  Mic,
   Send,
   Sparkles,
   Radio,
@@ -293,17 +294,19 @@ export const ChatArea: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#17191D] select-text relative">
+    <div className={`flex-1 flex flex-col h-full min-h-0 overflow-hidden select-text relative transition-colors ${
+      theme === 'light' ? 'bg-slate-50 text-slate-900' : 'bg-[#17191D] text-[#F8FAFC]'
+    }`}>
       {/* Top Channel Header */}
       <div className={`h-12 border-b px-4 flex items-center justify-between select-none shadow-sm flex-shrink-0 z-20 ${
         theme === 'light'
-          ? 'bg-white border-black/20 text-black'
+          ? 'bg-white border-slate-200 text-slate-900'
           : 'bg-[#1A1D23] border-[#22262E] text-white'
       }`}>
         <div className="flex items-center gap-2 truncate">
-          <Hash className="w-5 h-5 text-[#94A3B8] flex-shrink-0" />
+          <Hash className={`w-5 h-5 flex-shrink-0 ${theme === 'light' ? 'text-slate-500' : 'text-[#94A3B8]'}`} />
           <span className={`font-bold text-sm tracking-tight truncate ${
-            theme === 'light' ? 'text-black' : 'text-white'
+            theme === 'light' ? 'text-slate-900' : 'text-white'
           }`}>
             #{activeChannel.name}
           </span>
@@ -632,7 +635,7 @@ export const ChatArea: React.FC = () => {
                   <div className="mt-2 space-y-2 animate-in fade-in duration-100">
                     <div className={`rounded-lg p-2.5 shadow-inner transition-colors ${
                       theme === 'light'
-                        ? 'bg-white border-2 border-black'
+                        ? 'bg-white border border-[#16B99A] shadow-xs'
                         : 'bg-[#383a40] border-2 border-[#5865F2]'
                     }`}>
                       <textarea
@@ -852,7 +855,7 @@ export const ChatArea: React.FC = () => {
         {stagedAttachments.length > 0 && (
           <div className={`mb-2 p-2.5 rounded-xl flex flex-wrap gap-2 animate-in fade-in transition-colors ${
             theme === 'light'
-              ? 'bg-white border-2 border-black text-black'
+              ? 'bg-white border border-slate-200 text-slate-900 shadow-sm'
               : 'bg-[#2b2d31] border border-[#3e4047]'
           }`}>
             {stagedAttachments.map(att => (
@@ -860,7 +863,7 @@ export const ChatArea: React.FC = () => {
                 key={att.id}
                 className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs ${
                   theme === 'light'
-                    ? 'bg-slate-50 border-black/30 text-black'
+                    ? 'bg-slate-50 border-slate-200 text-slate-800'
                     : 'bg-[#1e1f22] border-[#35373c] text-white'
                 }`}
               >
@@ -868,7 +871,7 @@ export const ChatArea: React.FC = () => {
                 <span className="truncate max-w-[160px] font-medium" title={att.name}>
                   {att.name}
                 </span>
-                <span className={`text-[10px] ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>
+                <span className={`text-[10px] ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>
                   ({formatFileSize(att.size)})
                 </span>
                 <button
@@ -877,7 +880,7 @@ export const ChatArea: React.FC = () => {
                   title="Remover anexo"
                   className={`p-0.5 rounded ${
                     theme === 'light'
-                      ? 'hover:bg-black/10 text-slate-700 hover:text-black'
+                      ? 'hover:bg-slate-200 text-slate-500 hover:text-slate-900'
                       : 'hover:bg-[#35373c] text-[#949ba4] hover:text-white'
                   }`}
                 >
@@ -891,7 +894,7 @@ export const ChatArea: React.FC = () => {
         {/* Message Input Bar */}
         <div className={`chat-input-bar rounded-xl px-4 py-2.5 flex items-center gap-3 transition-all relative z-50 ${
           theme === 'light'
-            ? 'bg-white border-2 border-black shadow-[0_2px_12px_rgba(0,0,0,0.08)]'
+            ? 'bg-white border border-slate-300 shadow-sm focus-within:border-[#16B99A] focus-within:ring-1 focus-within:ring-[#16B99A]/30'
             : 'bg-[#20242A] border border-[#2C313C] focus-within:border-[#16B99A]/60 shadow-lg'
         }`}>
           <button
@@ -900,7 +903,7 @@ export const ChatArea: React.FC = () => {
             title="Adicionar anexo do computador (Fotos, PDFs, Docs, Vídeos)"
             className={`p-1 rounded-lg transition-all hover:scale-110 active:scale-95 cursor-pointer relative z-50 ${
               theme === 'light'
-                ? 'text-indigo-600 bg-slate-100 hover:bg-indigo-50 border border-black/30 hover:border-black'
+                ? 'text-[#16B99A] bg-slate-100 hover:bg-emerald-50 border border-slate-200 hover:border-[#16B99A]/40'
                 : 'text-[#94A3B8] hover:text-[#16B99A] bg-white/[0.03] hover:bg-[#16B99A]/10 border border-[#2C313C] hover:border-[#16B99A]/30'
             }`}
           >
@@ -920,7 +923,7 @@ export const ChatArea: React.FC = () => {
             }
             className={`bg-transparent text-sm focus:outline-none flex-1 leading-normal font-medium ${
               theme === 'light'
-                ? 'text-black placeholder-[#64748b]'
+                ? 'text-slate-900 placeholder:text-slate-400'
                 : 'text-white placeholder-[#64748B]'
             }`}
           />
@@ -940,11 +943,31 @@ export const ChatArea: React.FC = () => {
                 showEmojiPicker
                   ? 'text-amber-500 bg-amber-500/20 border-amber-500/50'
                   : theme === 'light'
-                  ? 'text-slate-800 bg-slate-100 border-black/30 hover:border-black hover:text-amber-600'
+                  ? 'text-slate-600 bg-slate-50 border-slate-200 hover:border-slate-300 hover:text-amber-600'
                   : 'text-[#94A3B8] bg-white/[0.04] hover:bg-amber-500/10 border-[#2C313C] hover:border-amber-500/40 hover:text-amber-300'
               }`}
             >
               <Smile className="w-5 h-5" />
+            </button>
+
+            {/* Microfone de Comando de Voz Nativo (Ctrl + Espaço) */}
+            <button
+              id="status-mic"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent('diskai-toggle-voice'));
+              }}
+              title="Comando de Voz Nativo (Ctrl + Espaço)"
+              aria-label="Microfone em espera"
+              className={`p-1.5 rounded-lg border transition-all hover:scale-105 active:scale-95 cursor-pointer relative z-50 [&.gravando]:bg-rose-500/20 [&.gravando]:text-rose-500 [&.gravando]:border-rose-500/50 [&.gravando]:animate-pulse ${
+                theme === 'light'
+                  ? 'text-slate-600 bg-slate-50 border-slate-200 hover:border-slate-300 hover:text-rose-600'
+                  : 'text-[#94A3B8] bg-white/[0.04] hover:bg-rose-500/10 border-[#2C313C] hover:border-rose-500/40 hover:text-rose-400'
+              }`}
+            >
+              <Mic className="w-5 h-5" />
             </button>
 
             {/* Botão de Envio de Mensagem */}
@@ -963,9 +986,9 @@ export const ChatArea: React.FC = () => {
               aria-label="Enviar Mensagem"
               className={`p-2 rounded-lg border transition-all relative z-50 cursor-pointer ${
                 inputText.trim() || stagedAttachments.length > 0
-                  ? 'bg-[#16B99A] text-[#131519] border-[#16B99A]/50 hover:bg-[#139E83] shadow-md shadow-[#16B99A]/20 hover:scale-105 active:scale-95 font-bold'
+                  ? 'bg-[#16B99A] text-white border-[#16B99A]/50 hover:bg-[#139E83] shadow-md shadow-[#16B99A]/20 hover:scale-105 active:scale-95 font-bold'
                   : theme === 'light'
-                  ? 'text-slate-500 hover:text-slate-800 bg-slate-100 border-black/20 hover:border-black/50'
+                  ? 'text-slate-400 hover:text-slate-700 bg-slate-50 border-slate-200 hover:border-slate-300'
                   : 'text-[#64748B] hover:text-[#94A3B8] bg-white/[0.04] border-[#2C313C]'
               }`}
             >

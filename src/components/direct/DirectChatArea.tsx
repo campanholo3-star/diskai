@@ -233,11 +233,13 @@ export const DirectChatArea: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#17191D] select-text relative">
+    <div className={`flex-1 flex flex-col h-full min-h-0 overflow-hidden select-text relative transition-colors ${
+      theme === 'light' ? 'bg-slate-50 text-slate-900' : 'bg-[#17191D] text-[#F8FAFC]'
+    }`}>
       {/* Top DM Header */}
       <div className={`h-12 border-b px-4 flex items-center justify-between select-none shadow-sm flex-shrink-0 z-20 ${
         theme === 'light'
-          ? 'bg-white border-black/20 text-black'
+          ? 'bg-white border-slate-200 text-slate-900'
           : 'bg-[#1A1D23] border-[#22262E] text-white'
       }`}>
         <div className="flex items-center gap-3 truncate">
@@ -245,10 +247,12 @@ export const DirectChatArea: React.FC = () => {
             <img
               src={friendUser.avatar}
               alt={friendUser.name}
-              className="w-7 h-7 rounded-lg object-cover ring-1 ring-white/10"
+              className={`w-7 h-7 rounded-lg object-cover ${theme === 'light' ? 'border border-slate-200' : 'ring-1 ring-white/10'}`}
             />
             <div
-              className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-[#1A1D23] ${
+              className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ${
+                theme === 'light' ? 'ring-white' : 'ring-[#1A1D23]'
+              } ${
                 friendUser.status === 'online'
                   ? 'bg-[#10B981]'
                   : friendUser.status === 'idle'
@@ -261,8 +265,8 @@ export const DirectChatArea: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 truncate">
-            <span className="font-bold text-white text-sm truncate">{friendUser.name}</span>
-            <span className="text-xs text-[#949ba4]">#{friendUser.tag}</span>
+            <span className={`font-bold text-sm truncate ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>{friendUser.name}</span>
+            <span className={`text-xs ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>#{friendUser.tag}</span>
             {friendUser.isBot && (
               <span className="bg-[#16B99A]/15 text-[#16B99A] border border-[#16B99A]/30 text-[9px] font-bold px-1 py-0.2 rounded uppercase flex items-center gap-0.5">
                 <Bot className="w-2.5 h-2.5" /> IA
@@ -674,7 +678,7 @@ export const DirectChatArea: React.FC = () => {
         {stagedAttachments.length > 0 && (
           <div className={`mb-2 p-2.5 rounded-xl flex flex-wrap gap-2 animate-in fade-in transition-colors ${
             theme === 'light'
-              ? 'bg-white border-2 border-black text-black'
+              ? 'bg-white border border-slate-200 text-slate-900 shadow-sm'
               : 'bg-[#2b2d31] border border-[#3e4047]'
           }`}>
             {stagedAttachments.map(att => (
@@ -682,7 +686,7 @@ export const DirectChatArea: React.FC = () => {
                 key={att.id}
                 className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs ${
                   theme === 'light'
-                    ? 'bg-slate-50 border-black/30 text-black'
+                    ? 'bg-slate-50 border-slate-200 text-slate-800'
                     : 'bg-[#1e1f22] border-[#35373c] text-white'
                 }`}
               >
@@ -690,7 +694,7 @@ export const DirectChatArea: React.FC = () => {
                 <span className="truncate max-w-[160px] font-medium" title={att.name}>
                   {att.name}
                 </span>
-                <span className={`text-[10px] ${theme === 'light' ? 'text-slate-600' : 'text-[#949ba4]'}`}>
+                <span className={`text-[10px] ${theme === 'light' ? 'text-slate-500' : 'text-[#949ba4]'}`}>
                   ({formatFileSize(att.size)})
                 </span>
                 <button
@@ -699,7 +703,7 @@ export const DirectChatArea: React.FC = () => {
                   title="Remover anexo"
                   className={`p-0.5 rounded ${
                     theme === 'light'
-                      ? 'hover:bg-black/10 text-slate-700 hover:text-black'
+                      ? 'hover:bg-slate-200 text-slate-500 hover:text-slate-900'
                       : 'hover:bg-[#35373c] text-[#949ba4] hover:text-white'
                   }`}
                 >
@@ -713,7 +717,7 @@ export const DirectChatArea: React.FC = () => {
         {/* Message Input Bar */}
         <div className={`chat-input-bar rounded-xl px-4 py-2.5 flex items-center gap-3 transition-all relative z-50 ${
           theme === 'light'
-            ? 'bg-white border-2 border-black shadow-[0_2px_12px_rgba(0,0,0,0.08)]'
+            ? 'bg-white border border-slate-300 shadow-sm focus-within:border-[#16B99A] focus-within:ring-1 focus-within:ring-[#16B99A]/30'
             : 'bg-[#20242A] border border-[#2C313C] focus-within:border-[#16B99A]/60 shadow-lg'
         }`}>
           <button
@@ -722,7 +726,7 @@ export const DirectChatArea: React.FC = () => {
             title="Adicionar anexo do computador (Fotos, PDFs, Docs, Vídeos)"
             className={`p-1 rounded-lg transition-all hover:scale-110 active:scale-95 cursor-pointer relative z-50 ${
               theme === 'light'
-                ? 'text-indigo-600 bg-slate-100 hover:bg-indigo-50 border border-black/30 hover:border-black'
+                ? 'text-[#16B99A] bg-slate-100 hover:bg-emerald-50 border border-slate-200 hover:border-[#16B99A]/40'
                 : 'text-[#94A3B8] hover:text-[#16B99A] bg-white/[0.03] hover:bg-[#16B99A]/10 border border-[#2C313C] hover:border-[#16B99A]/30'
             }`}
           >
@@ -742,7 +746,7 @@ export const DirectChatArea: React.FC = () => {
             }
             className={`bg-transparent text-sm focus:outline-none flex-1 leading-normal font-medium ${
               theme === 'light'
-                ? 'text-black placeholder-[#64748b]'
+                ? 'text-slate-900 placeholder:text-slate-400'
                 : 'text-white placeholder-[#64748B]'
             }`}
           />
@@ -762,7 +766,7 @@ export const DirectChatArea: React.FC = () => {
                 showEmojiPicker
                   ? 'text-amber-500 bg-amber-500/20 border-amber-500/50'
                   : theme === 'light'
-                  ? 'text-slate-800 bg-slate-100 border-black/30 hover:border-black hover:text-amber-600'
+                  ? 'text-slate-600 bg-slate-50 border-slate-200 hover:border-slate-300 hover:text-amber-600'
                   : 'text-[#94A3B8] bg-white/[0.04] hover:bg-amber-500/10 border-[#2C313C] hover:border-amber-500/40 hover:text-amber-300'
               }`}
             >
@@ -785,9 +789,9 @@ export const DirectChatArea: React.FC = () => {
               aria-label="Enviar Mensagem"
               className={`p-2 rounded-lg border transition-all relative z-50 cursor-pointer ${
                 inputText.trim() || stagedAttachments.length > 0
-                  ? 'bg-[#16B99A] text-[#131519] border-[#16B99A]/50 hover:bg-[#139E83] shadow-md shadow-[#16B99A]/20 hover:scale-105 active:scale-95 font-bold'
+                  ? 'bg-[#16B99A] text-white border-[#16B99A]/50 hover:bg-[#139E83] shadow-md shadow-[#16B99A]/20 hover:scale-105 active:scale-95 font-bold'
                   : theme === 'light'
-                  ? 'text-slate-500 hover:text-slate-800 bg-slate-100 border-black/20 hover:border-black/50'
+                  ? 'text-slate-400 hover:text-slate-700 bg-slate-50 border-slate-200 hover:border-slate-300'
                   : 'text-[#64748B] hover:text-[#94A3B8] bg-white/[0.04] border-[#2C313C]'
               }`}
             >

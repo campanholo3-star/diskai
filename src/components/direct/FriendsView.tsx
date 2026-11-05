@@ -105,20 +105,22 @@ export const FriendsView: React.FC = () => {
   const pendingCount = friends.filter(f => f.relationshipStatus === 'pending_incoming').length;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#17191D] select-none overflow-hidden">
+    <div className={`flex-1 flex flex-col h-full select-none overflow-hidden ${
+      theme === 'light' ? 'bg-slate-50 text-slate-900' : 'bg-[#17191D] text-[#F8FAFC]'
+    }`}>
       {/* Top Header */}
       <div className={`h-12 border-b px-4 flex items-center justify-between shadow-sm flex-shrink-0 ${
         theme === 'light'
-          ? 'bg-white border-black/20 text-black'
+          ? 'bg-white border-slate-200 text-slate-900'
           : 'bg-[#1A1D23] border-[#22262E] text-white'
       }`}>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-white font-bold text-sm">
-            <Users className="w-5 h-5 text-[#94A3B8]" />
+          <div className={`flex items-center gap-2 font-bold text-sm ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+            <Users className={`w-5 h-5 ${theme === 'light' ? 'text-slate-500' : 'text-[#94A3B8]'}`} />
             <span>Amigos</span>
           </div>
 
-          <div className="w-[1px] h-4 bg-[#2C313C]" />
+          <div className={`w-[1px] h-4 ${theme === 'light' ? 'bg-slate-200' : 'bg-[#2C313C]'}`} />
 
           {/* Subtabs */}
           <div className="flex items-center gap-2">
@@ -126,7 +128,11 @@ export const FriendsView: React.FC = () => {
               onClick={() => setDmSubTab('online')}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                 dmSubTab === 'online'
-                  ? 'bg-[#22262E] text-white shadow-sm'
+                  ? theme === 'light'
+                    ? 'bg-slate-100 text-slate-900 shadow-sm border border-slate-200'
+                    : 'bg-[#22262E] text-white shadow-sm'
+                  : theme === 'light'
+                  ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   : 'text-[#94A3B8] hover:bg-[#20242A] hover:text-[#F8FAFC]'
               }`}
             >
@@ -136,7 +142,11 @@ export const FriendsView: React.FC = () => {
               onClick={() => setDmSubTab('all')}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                 dmSubTab === 'all'
-                  ? 'bg-[#22262E] text-white shadow-sm'
+                  ? theme === 'light'
+                    ? 'bg-slate-100 text-slate-900 shadow-sm border border-slate-200'
+                    : 'bg-[#22262E] text-white shadow-sm'
+                  : theme === 'light'
+                  ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   : 'text-[#94A3B8] hover:bg-[#20242A] hover:text-[#F8FAFC]'
               }`}
             >
@@ -146,13 +156,17 @@ export const FriendsView: React.FC = () => {
               onClick={() => setDmSubTab('pending')}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 dmSubTab === 'pending'
-                  ? 'bg-[#22262E] text-white shadow-sm'
+                  ? theme === 'light'
+                    ? 'bg-slate-100 text-slate-900 shadow-sm border border-slate-200'
+                    : 'bg-[#22262E] text-white shadow-sm'
+                  : theme === 'light'
+                  ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   : 'text-[#94A3B8] hover:bg-[#20242A] hover:text-[#F8FAFC]'
               }`}
             >
               Pendente
               {pendingCount > 0 && (
-                <span className="bg-[#16B99A] text-[#131519] text-[9px] font-bold px-1.5 py-0.2 rounded-full">
+                <span className="bg-[#16B99A] text-white dark:text-[#131519] text-[9px] font-bold px-1.5 py-0.2 rounded-full">
                   {pendingCount}
                 </span>
               )}
@@ -161,7 +175,11 @@ export const FriendsView: React.FC = () => {
               onClick={() => setDmSubTab('blocked')}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                 dmSubTab === 'blocked'
-                  ? 'bg-[#22262E] text-white shadow-sm'
+                  ? theme === 'light'
+                    ? 'bg-slate-100 text-slate-900 shadow-sm border border-slate-200'
+                    : 'bg-[#22262E] text-white shadow-sm'
+                  : theme === 'light'
+                  ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   : 'text-[#94A3B8] hover:bg-[#20242A] hover:text-[#F8FAFC]'
               }`}
             >
@@ -171,7 +189,7 @@ export const FriendsView: React.FC = () => {
               onClick={() => setDmSubTab('add')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                 dmSubTab === 'add'
-                  ? 'bg-[#16B99A] text-[#131519] shadow'
+                  ? 'bg-[#16B99A] text-white dark:text-[#131519] shadow'
                   : 'text-[#16B99A] hover:bg-[#16B99A]/10'
               }`}
             >
@@ -479,8 +497,10 @@ export const FriendsView: React.FC = () => {
         </div>
 
         {/* Right Sidebar: "Ativo Agora" (Active Now) */}
-        <div className="w-80 border-l border-[#1f2023]/50 p-4 hidden xl:flex flex-col space-y-4">
-          <h3 className="text-white font-bold text-sm tracking-wide">Ativo Agora</h3>
+        <div className={`w-80 border-l p-4 hidden xl:flex flex-col space-y-4 ${
+          theme === 'light' ? 'border-slate-200 bg-slate-50/50' : 'border-[#1f2023]/50'
+        }`}>
+          <h3 className={`font-bold text-sm tracking-wide ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>Ativo Agora</h3>
 
           <div className="space-y-3">
             {friends
@@ -489,7 +509,11 @@ export const FriendsView: React.FC = () => {
                 <div
                   key={f.id}
                   onClick={() => setActiveDmUserId(f.id)}
-                  className="bg-[#2b2d31] p-3.5 rounded-xl border border-[#383a40] hover:border-[#5865F2] cursor-pointer transition-all space-y-2.5"
+                  className={`p-3.5 rounded-xl border cursor-pointer transition-all space-y-2.5 ${
+                    theme === 'light'
+                      ? 'bg-white border-slate-200 hover:border-[#16B99A] shadow-xs'
+                      : 'bg-[#2b2d31] border-[#383a40] hover:border-[#5865F2]'
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <img
@@ -498,7 +522,7 @@ export const FriendsView: React.FC = () => {
                       className="w-8 h-8 rounded-full object-cover"
                     />
                     <div className="truncate">
-                      <div className="text-xs font-bold text-white truncate">{f.user.name}</div>
+                      <div className={`text-xs font-bold truncate ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>{f.user.name}</div>
                       <div className="text-[11px] text-[#23a55a] font-semibold truncate flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#23a55a]" />
                         {f.user.activity?.name}
@@ -507,12 +531,16 @@ export const FriendsView: React.FC = () => {
                   </div>
 
                   {f.user.activity?.details && (
-                    <div className="bg-[#1e1f22] p-2 rounded text-[11px] text-[#949ba4] truncate">
+                    <div className={`p-2 rounded text-[11px] truncate ${
+                      theme === 'light' ? 'bg-slate-100 text-slate-600' : 'bg-[#1e1f22] text-[#949ba4]'
+                    }`}>
                       {f.user.activity.details}
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between text-[10px] text-[#949ba4] pt-1 border-t border-[#35373c]/50">
+                  <div className={`flex items-center justify-between text-[10px] pt-1 border-t ${
+                    theme === 'light' ? 'border-slate-100 text-slate-500' : 'border-[#35373c]/50 text-[#949ba4]'
+                  }`}>
                     <span>Clique para enviar DM</span>
                     <MessageSquare className="w-3 h-3" />
                   </div>

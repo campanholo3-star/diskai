@@ -1039,9 +1039,12 @@ export const saveMessageToDb = async (
   }
 };
 
+let messagesTableAvailable = true;
+
 export const fetchChannelMessagesFromDb = async (
   channelId: string
 ): Promise<Message[]> => {
+  if (!messagesTableAvailable || !channelId) return [];
   const client = getSupabaseClient();
   try {
     const { data, error } = await client
@@ -1050,7 +1053,13 @@ export const fetchChannelMessagesFromDb = async (
       .eq('channel_id', channelId)
       .order('created_at', { ascending: true });
 
-    if (error || !data) return [];
+    if (error) {
+      if (error.code === '42P01' || error.message?.includes('recursion') || (error as any).status === 500) {
+        messagesTableAvailable = false;
+      }
+      return [];
+    }
+    if (!data) return [];
 
     return data.map((row: any) => ({
       id: row.id,
@@ -1617,21 +1626,34 @@ export const toggleAppointmentStatus = async (id: string): Promise<Appointment[]
   return updated;
 };
 
+let appointmentsTableAvailable = true;
+
 export const fetchAppointmentsFromDb = async (): Promise<Appointment[]> => {
-  const client = getSupabaseClient();
   let localList: Appointment[] = [];
   try {
     const saved = localStorage.getItem('diskai_appointments');
     if (saved) localList = JSON.parse(saved);
   } catch {}
 
+  if (!appointmentsTableAvailable) {
+    return localList;
+  }
+
+  const client = getSupabaseClient();
   try {
     const { data, error } = await client
       .from('appointments')
       .select('*')
       .order('start_time', { ascending: true });
 
-    if (!error && data && data.length > 0) {
+    if (error) {
+      if (error.code === '42P01' || error.message?.includes('not find') || (error as any).status === 404) {
+        appointmentsTableAvailable = false;
+      }
+      return localList;
+    }
+
+    if (data && data.length > 0) {
       const merged = [...data];
       localList.forEach(l => {
         if (!merged.some(m => m.id === l.id)) merged.push(l);
@@ -1641,7 +1663,9 @@ export const fetchAppointmentsFromDb = async (): Promise<Appointment[]> => {
       } catch {}
       return merged;
     }
-  } catch {}
+  } catch {
+    appointmentsTableAvailable = false;
+  }
 
   return localList;
 };
